@@ -1,103 +1,80 @@
+from dataclasses import dataclass, field
 import hashlib
 import json
 import time
+from typing import List, Set
 from urllib.parse import urlparse
 import requests
 
 
-class Blockchain(object):
-    def __init__(self):
-        self.chain = []
+@dataclass
+class Block:
+    index: int
+    timestamp: float
+    transactions: list
+    proof: int
+    previous_hash: str
+
+
+@dataclass
+class Blockchain:
+    chain: List[Block] = field(default_factory=list)
+    current_transactions: List[dict] = field(default_factory=list)
+    nodes: Set[str] = field(default_factory=set)
+
+    def __post_init__(self):
+        genesis_block = Block(
+            index=1,
+            timestamp=time.time(),
+            transactions=[],
+            proof=100,
+            previous_hash=1
+        )
+        self.chain.append(genesis_block)
+
+    def new_block(self, proof: int, previous_hash: str = None) -> Block:
+        previous_hash = previous_hash or self.hash(self.chain[-1])
+        block = Block(
+            index=len(self.chain) + 1,
+            timestamp=time.time(),
+            transactions=self.current_transactions,
+            proof=proof,
+            previous_hash=previous_hash
+        )
         self.current_transactions = []
-        self.nodes = set()
-
-        # Create the genesis block
-        self.new_block(previous_hash=1, proof=100)
-
-    def new_block(self, proof, previous_hash=None):
-        """
-        Create a new Block in the Blockchain
-        :param proof: <int> The proof given by the Proof of Work algorithm
-        :param previous_hash: (Optional) <str> Hash of previous Block
-        :return: <dict> New Block
-        """
-
-        block = {
-            "index": len(self.chain) + 1,
-            "timestamp": time.time(),
-            "transactions": self.current_transactions,
-            "proof": proof,
-            "previous_hash": previous_hash or self.hash(self.chain[-1])
-        }
-
-        # reset current transactions list
-        self.current_transactions = []
-
         self.chain.append(block)
         return block
 
-    def new_transaction(self, sender, recipient, amount):
-        """
-        Creates a new transaction to go into the next mined Block
-        :param sender: <str> Address of the Sender
-        :param recipient: <str> Address of the Recipient
-        :param amount: <int> Amount
-        :return: <int> The index of the Block that will hold this transaction
-        """
-
+    def new_transaction(self, sender: str, recipient: str, amount: int) -> int:
         self.current_transactions.append({
             'sender': sender,
             'recipient': recipient,
             'amount': amount,
         })
-
-        return self.last_block['index'] + 1
+        return self.last_block.index + 1
 
     @property
-    def last_block(self):
+    def last_block(self) -> Block:
         return self.chain[-1]
 
     @staticmethod
-    def hash(block):
-        """
-        Creates a SHA-256 hash of a Block
-        :param block: <dict> Block
-        :return: <str>
-        """
-
-        # We must make sure that the Dictionary is Ordered, or we'll have inconsistent hashes
-        block_string = json.dumps(block, sort_keys=True).encode()
+    def hash(block: Block) -> str:
+        block_string = json.dumps(block.__dict__, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
 
-    def proof_of_work(self, last_proof):
-        """
-        Simple Proof of Work Algorithm:
-         - Find a number p' such that hash(pp') contains leading 4 zeroes, where p is the previous p'
-         - p is the previous proof, and p' is the new proof
-        :param last_proof: <int>
-        :return: <int>
-        """
-
+    def proof_of_work(self, last_proof: int) -> int:
         proof = 0
-        while self.valid_proof(last_proof, proof) is False:
+        while not self.valid_proof(last_proof, proof):
             proof += 1
-
         return proof
 
     @staticmethod
-    def valid_proof(last_proof, proof):
-        """
-        Validates the Proof: Does hash(last_proof, proof) contain 4 leading zeroes?
-        :param last_proof: <int> Previous Proof
-        :param proof: <int> Current Proof
-        :return: <bool> True if correct, False if not.
-        """
-
+    def valid_proof(last_proof: int, proof: int) -> bool:
         guess = f'{last_proof}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         return guess_hash[:4] == "0000"
 
-    def register_node(self, address):
+    def register_node(self, address: str) -> None:
         """
         Add a new node to the list of nodes
         :param address: <str> Address of node. Eg. 'http://192.168.0.5:5000'
@@ -106,7 +83,7 @@ class Blockchain(object):
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
 
-    def valid_chain(self, chain):
+    def valid_chain(self, chain: List[Block]) -> bool:
         """
         Determine if a given blockchain is valid
         :param chain: <list> A blockchain
@@ -114,17 +91,19 @@ class Blockchain(object):
         """
         last_block = chain[0]
         current_index = 1
+
         while current_index < len(chain):
             current_block = chain[current_index]
             print(f'{last_block}')
             print(f'{current_block}')
             print("\n-----------\n")
+
             # Check that the hash of the block is correct
-            if current_block['previous_hash'] != self.hash(last_block):
+            if current_block.previous_hash != self.hash(last_block):
                 return False
 
             # Check that the Proof of Work is correct
-            if not self.valid_proof(last_block['proof'], current_block['proof']):
+            if not self.valid_proof(last_block.proof, current_block.proof):
                 return False
 
             last_block = current_block
@@ -132,7 +111,7 @@ class Blockchain(object):
 
         return True
 
-    def resolve_conflicts(self):
+    def resolve_conflicts(self) -> bool:
         """
         This is our Consensus Algorithm, it resolves conflicts
         by replacing our chain with the longest one in the network.
@@ -150,14 +129,25 @@ class Blockchain(object):
 
             if response.status_code == 200:
                 length = response.json()["length"]
-                chain = response.json()["chain"]
+                chain_data = response.json()["chain"]
+
+                # Rebuild the chain using the Block dataclass
+                chain = [
+                    Block(
+                        index=block['index'],
+                        timestamp=block['timestamp'],
+                        transactions=block['transactions'],
+                        proof=block['proof'],
+                        previous_hash=block['previous_hash'],
+                    ) for block in chain_data
+                ]
 
                 # Check if the length is longer and the chain is valid
                 if length > max_length and self.valid_chain(chain):
                     max_length = length
                     new_chain = chain
 
-        # Replace our chain if we discovered a new, valid chain, longer than ours
+        # Replace our chain if we discovered a new, valid chain longer than ours
         if new_chain:
             self.chain = new_chain
             return True

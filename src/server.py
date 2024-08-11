@@ -16,7 +16,7 @@ blockchain = Blockchain()
 def mine():
     # We run the proof of work algorithm to get the next proof
     last_block = blockchain.last_block
-    last_proof = last_block["proof"]
+    last_proof = last_block.proof
     proof = blockchain.proof_of_work(last_proof)
 
     # We must receive a reward for finding the proof.
@@ -33,10 +33,10 @@ def mine():
 
     response = {
         "message": "New Block Forged",
-        'index': block['index'],
-        'transactions': block['transactions'],
-        'proof': block['proof'],
-        'previous_hash': block['previous_hash'],
+        'index': block.index,
+        'transactions': block.transactions,
+        'proof': block.proof,
+        'previous_hash': block.previous_hash,
     }
     return jsonify(response), 200
 
@@ -103,4 +103,4 @@ def consensus():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001)
+    app.run(host="0.0.0.0", port=5000)
