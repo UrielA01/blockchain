@@ -21,8 +21,11 @@ class Block:
         Creates a SHA-256 hash of the block's contents using the dataclass dictionary representation.
         :return: <str> Hash of the block
         """
+        block_as_dict = asdict(self)
+        block_as_dict.pop('hash', None)
+
         # Convert the block's data to a dictionary, sort keys, and dump as JSON string
-        block_string = json.dumps(asdict(self), sort_keys=True).encode()
+        block_string = json.dumps(block_as_dict, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
 
     def __post_init__(self):
@@ -70,11 +73,6 @@ class Blockchain:
     def last_block(self) -> Block:
         return self.chain[-1]
 
-    @staticmethod
-    def hash(block: Block) -> str:
-        block_string = json.dumps(block.__dict__, sort_keys=True).encode()
-        return hashlib.sha256(block_string).hexdigest()
-
     def valid_nonce(self, block: Block, nonce: int) -> bool:
         block.nonce = nonce
         return block.compute_hash()[:4] == "0000"
@@ -102,29 +100,24 @@ class Blockchain:
         self.nodes.add(parsed_url.netloc)
 
     def valid_chain(self, chain: List[Block]) -> bool:
-        """
-        Determine if a given blockchain is valid
-        :param chain: <list> A blockchain
-        :return: <bool> True if valid, False if not
-        """
-        last_block = chain[0]
+        # Determine if a given blockchain is valid
+        previous_block = chain[0]
         current_index = 1
 
         while current_index < len(chain):
             current_block = chain[current_index]
-            print(f'{last_block}')
-            print(f'{current_block}')
-            print("\n-----------\n")
 
             # Check that the hash of the block is correct
-            if current_block.previous_hash != self.hash(last_block):
+            if current_block.previous_hash != previous_block.compute_hash():
+                print("Invalid previous hash")
                 return False
 
             # Check that the Proof of Work is correct
-            if not self.valid_proof(last_block.proof, current_block.proof):
+            if not self.valid_nonce(current_block, current_block.nonce):
+                print("Invalid PoW")
                 return False
 
-            last_block = current_block
+            previous_block = current_block
             current_index += 1
 
         return True
@@ -155,7 +148,7 @@ class Blockchain:
                         index=block['index'],
                         timestamp=block['timestamp'],
                         transactions=block['transactions'],
-                        proof=block['proof'],
+                        nonce=block['nonce'],
                         previous_hash=block['previous_hash'],
                     ) for block in chain_data
                 ]
