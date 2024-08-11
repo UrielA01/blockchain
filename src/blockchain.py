@@ -62,11 +62,15 @@ class Blockchain:
         return block
 
     def new_transaction(self, sender: str, recipient: str, amount: int) -> int:
-        self.current_transactions.append({
-            'sender': sender,
-            'recipient': recipient,
-            'amount': amount,
-        })
+        transaction = {
+            "sender": sender,
+            "recipient": recipient,
+            "amount": amount
+        }
+        self.current_transactions.append(transaction)
+
+        self.broadcast_transaction(transaction)
+
         return self.last_block.index + 1
 
     @property
@@ -164,3 +168,10 @@ class Blockchain:
             return True
 
         return False
+
+    def broadcast_transaction(self, transaction: dict):
+        for node in self.nodes:
+            response = requests.post(
+                f'http://{node}/transactions/new', json=transaction)
+            if response.status_code != 201:
+                raise Exception('Failed to broadcast transaction')
