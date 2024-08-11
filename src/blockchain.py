@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 import hashlib
 import json
 import time
@@ -12,8 +12,21 @@ class Block:
     index: int
     timestamp: float
     transactions: list
-    proof: int
+    nonce: int
     previous_hash: str
+    hash: str = None
+
+    def compute_hash(self) -> str:
+        """
+        Creates a SHA-256 hash of the block's contents using the dataclass dictionary representation.
+        :return: <str> Hash of the block
+        """
+        # Convert the block's data to a dictionary, sort keys, and dump as JSON string
+        block_string = json.dumps(asdict(self), sort_keys=True).encode()
+        return hashlib.sha256(block_string).hexdigest()
+
+    def __post_init__(self):
+        self.hash = self.compute_hash()
 
 
 @dataclass
@@ -27,18 +40,18 @@ class Blockchain:
             index=1,
             timestamp=time.time(),
             transactions=[],
-            proof=100,
+            nonce=100,
             previous_hash=1
         )
         self.chain.append(genesis_block)
 
-    def new_block(self, proof: int, previous_hash: str = None) -> Block:
+    def add_block(self, nonce: int, previous_hash: str = None) -> Block:
         previous_hash = previous_hash or self.hash(self.chain[-1])
         block = Block(
             index=len(self.chain) + 1,
             timestamp=time.time(),
             transactions=self.current_transactions,
-            proof=proof,
+            nonce=nonce,
             previous_hash=previous_hash
         )
         self.current_transactions = []
@@ -62,17 +75,22 @@ class Blockchain:
         block_string = json.dumps(block.__dict__, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
 
-    def proof_of_work(self, last_proof: int) -> int:
-        proof = 0
-        while not self.valid_proof(last_proof, proof):
-            proof += 1
-        return proof
+    def valid_nonce(self, block: Block, nonce: int) -> bool:
+        block.nonce = nonce
+        return block.compute_hash()[:4] == "0000"
 
-    @staticmethod
-    def valid_proof(last_proof: int, proof: int) -> bool:
-        guess = f'{last_proof}{proof}'.encode()
-        guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:4] == "0000"
+    def proof_of_work(self, last_block: Block) -> int:
+        """
+        Simple Proof of Work Algorithm:
+        Find a nonce such that the hash of the block contains leading 4 zeros.
+        :param last_block: <Block> Last block in the chain
+        :return: <int> The valid nonce
+        """
+        nonce = 0
+        while True:
+            if self.valid_nonce(last_block, nonce):
+                return nonce
+            nonce += 1
 
     def register_node(self, address: str) -> None:
         """

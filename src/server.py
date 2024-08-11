@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from uuid import uuid4
 from flask import Flask, jsonify, request
 from blockchain import Blockchain
@@ -16,8 +17,8 @@ blockchain = Blockchain()
 def mine():
     # We run the proof of work algorithm to get the next proof
     last_block = blockchain.last_block
-    last_proof = last_block.proof
-    proof = blockchain.proof_of_work(last_proof)
+    # last_nonce = last_block.nonce
+    nonce = blockchain.proof_of_work(last_block)
 
     # We must receive a reward for finding the proof.
     # The sender is "0" to signify that this node has mined a new coin.
@@ -29,14 +30,11 @@ def mine():
 
     # Forge the new Block by adding it to the chain
     previous_hash = blockchain.hash(last_block)
-    block = blockchain.new_block(proof, previous_hash)
+    block = blockchain.add_block(nonce, previous_hash)
 
     response = {
         "message": "New Block Forged",
-        'index': block.index,
-        'transactions': block.transactions,
-        'proof': block.proof,
-        'previous_hash': block.previous_hash,
+        **(asdict(block))
     }
     return jsonify(response), 200
 
