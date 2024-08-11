@@ -12,8 +12,8 @@ class Block:
     index: int
     timestamp: float
     transactions: list
-    nonce: int
     previous_hash: str
+    nonce: int = None
     hash: str = None
 
     def compute_hash(self) -> str:
@@ -40,20 +40,20 @@ class Blockchain:
             index=1,
             timestamp=time.time(),
             transactions=[],
-            nonce=100,
-            previous_hash=1
+            previous_hash=None
         )
         self.chain.append(genesis_block)
 
-    def add_block(self, nonce: int, previous_hash: str = None) -> Block:
-        previous_hash = previous_hash or self.hash(self.chain[-1])
+    def add_block(self, previous_hash: str) -> Block:
         block = Block(
             index=len(self.chain) + 1,
             timestamp=time.time(),
             transactions=self.current_transactions,
-            nonce=nonce,
             previous_hash=previous_hash
         )
+        nonce = self.proof_of_work(block)
+        block.nonce = nonce
+        block.hash = block.compute_hash()
         self.current_transactions = []
         self.chain.append(block)
         return block
@@ -79,7 +79,7 @@ class Blockchain:
         block.nonce = nonce
         return block.compute_hash()[:4] == "0000"
 
-    def proof_of_work(self, last_block: Block) -> int:
+    def proof_of_work(self, block: Block) -> int:
         """
         Simple Proof of Work Algorithm:
         Find a nonce such that the hash of the block contains leading 4 zeros.
@@ -88,7 +88,7 @@ class Blockchain:
         """
         nonce = 0
         while True:
-            if self.valid_nonce(last_block, nonce):
+            if self.valid_nonce(block, nonce):
                 return nonce
             nonce += 1
 

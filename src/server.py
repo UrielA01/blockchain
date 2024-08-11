@@ -15,11 +15,6 @@ blockchain = Blockchain()
 
 @app.route('/mine', methods=['GET'])
 def mine():
-    # We run the proof of work algorithm to get the next proof
-    last_block = blockchain.last_block
-    # last_nonce = last_block.nonce
-    nonce = blockchain.proof_of_work(last_block)
-
     # We must receive a reward for finding the proof.
     # The sender is "0" to signify that this node has mined a new coin.
     blockchain.new_transaction(
@@ -29,8 +24,8 @@ def mine():
     )
 
     # Forge the new Block by adding it to the chain
-    previous_hash = blockchain.hash(last_block)
-    block = blockchain.add_block(nonce, previous_hash)
+    previous_hash = blockchain.last_block.hash
+    block = blockchain.add_block(previous_hash)
 
     response = {
         "message": "New Block Forged",
