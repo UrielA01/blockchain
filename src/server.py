@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from uuid import uuid4
 from flask import Flask, jsonify, request
-from blockchain import Blockchain
+from blockchain import Block, Blockchain
 
 # Instantiate our node
 app = Flask(__name__)
@@ -31,6 +31,7 @@ def mine():
         "message": "New Block Forged",
         **(asdict(block))
     }
+
     return jsonify(response), 200
 
 
@@ -73,6 +74,27 @@ def register_nodes():
     response = {
         "message": "New nodes have been added",
         "total_nodes": list(blockchain.nodes)
+    }
+    return jsonify(response), 201
+
+
+@app.route('/block/new', methods=['POST'])
+def recive_block():
+    block_as_json = request.get_json()
+
+    block = Block(
+        index=block_as_json["index"],
+        timestamp=block_as_json["timestamp"],
+        transactions=block_as_json["transactions"],
+        nonce=block_as_json["nonce"],
+        previous_hash=block_as_json["previous_hash"]
+    )
+
+    blockchain.recive_block(block)
+
+    response = {
+        "message": "New block have been added",
+        "block": block_as_json
     }
     return jsonify(response), 201
 

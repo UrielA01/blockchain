@@ -59,7 +59,21 @@ class Blockchain:
         block.hash = block.compute_hash()
         self.current_transactions = []
         self.chain.append(block)
+
+        self.broadcast_block(block)
         return block
+
+    def recive_block(self, block: Block) -> bool:
+        new_chain = [
+            block_in_chain for block_in_chain in self.chain
+        ]
+        new_chain.append(block)
+
+        if self.valid_chain(new_chain):
+            self.chain = new_chain
+            return True
+
+        return False
 
     def new_transaction(self, sender: str, recipient: str, amount: int) -> int:
         transaction = {
@@ -175,3 +189,10 @@ class Blockchain:
                 f'http://{node}/transactions/new', json=transaction)
             if response.status_code != 201:
                 raise Exception('Failed to broadcast transaction')
+
+    def broadcast_block(self, block: Block):
+        for node in self.nodes:
+            response = requests.post(
+                f'http://{node}/block/new', json=asdict(block))
+            if response.status_code != 201:
+                raise Exception('Failed to broadcast block')
