@@ -16,6 +16,9 @@ class Block:
     nonce: int = None
     hash: str = None
 
+    def __post_init__(self):
+        self.hash = self.compute_hash()
+
     def compute_hash(self) -> str:
         """
         Creates a SHA-256 hash of the block's contents using the dataclass dictionary representation.
@@ -27,9 +30,6 @@ class Block:
         # Convert the block's data to a dictionary, sort keys, and dump as JSON string
         block_string = json.dumps(block_as_dict, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
-
-    def __post_init__(self):
-        self.hash = self.compute_hash()
 
 
 @dataclass
@@ -112,8 +112,11 @@ class Blockchain:
         :param address: <str> Address of node. Eg. 'http://192.168.0.5:5000'
         :return: None
         """
-        parsed_url = urlparse(address)
-        self.nodes.add(parsed_url.netloc)
+        try:
+            parsed_url = urlparse(address)
+            self.nodes.add(parsed_url.netloc)
+        except AttributeError:
+            raise ValueError("Invalid URL")
 
     def valid_chain(self, chain: List[Block]) -> bool:
         # Determine if a given blockchain is valid
