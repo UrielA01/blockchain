@@ -8,10 +8,23 @@ import requests
 
 
 @dataclass
+class Transaction:
+    sender: str
+    recipient: str
+    amount: int
+
+    def __repr__(self):
+        return f"{self.sender} -> {self.recipient}: {self.amount}"
+
+    def valid_transaction(self) -> bool:
+        return self.amount > 0 and self.sender and self.recipient
+
+
+@dataclass
 class Block:
     index: int
     timestamp: float
-    transactions: list
+    transactions: List[Transaction]
     previous_hash: str
     nonce: int = None
     hash: str = None
@@ -35,7 +48,7 @@ class Block:
 @dataclass
 class Blockchain:
     chain: List[Block] = field(default_factory=list)
-    current_transactions: List[dict] = field(default_factory=list)
+    current_transactions: List[Transaction] = field(default_factory=list)
     nodes: Set[str] = field(default_factory=set)
 
     def __post_init__(self):
@@ -74,11 +87,11 @@ class Blockchain:
         return False
 
     def new_transaction(self, sender: str, recipient: str, amount: int) -> int:
-        transaction = {
-            "sender": sender,
-            "recipient": recipient,
-            "amount": amount
-        }
+        transaction = Transaction(sender, recipient, amount)
+
+        if not transaction.valid_transaction():
+            raise ValueError("Invalid transaction")
+
         self.current_transactions.append(transaction)
 
         self.broadcast_transaction(transaction)
@@ -184,10 +197,10 @@ class Blockchain:
 
         return False
 
-    def broadcast_transaction(self, transaction: dict):
+    def broadcast_transaction(self, transaction: Transaction):
         for node in self.nodes:
             response = requests.post(
-                f'http://{node}/transactions/new', json=transaction)
+                f'http://{node}/transactions/new', json=asdict(transaction))
             if response.status_code != 201:
                 raise Exception('Failed to broadcast transaction')
 
