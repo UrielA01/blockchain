@@ -64,9 +64,7 @@ class Blockchain:
         return block
 
     def recive_block(self, block: Block) -> bool:
-        new_chain = [
-            block_in_chain for block_in_chain in self.chain
-        ]
+        new_chain = self.chain.copy()
         new_chain.append(block)
 
         if self.valid_chain(new_chain):
