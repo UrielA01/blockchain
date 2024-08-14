@@ -53,8 +53,8 @@ def new_transaction():
     return jsonify(response), 201
 
 
-@app.route("/transactions/recive", methods=['POST'])
-def recive_transaction():
+@app.route("/transactions/receive", methods=['POST'])
+def receive_transaction():
     values = request.get_json()
 
     transaction = Transaction(
@@ -96,7 +96,7 @@ def register_nodes():
 
 
 @app.route('/block/new', methods=['POST'])
-def recive_block():
+def receive_block():
     block_as_json = request.get_json()
 
     block = Block(
@@ -107,7 +107,7 @@ def recive_block():
         previous_hash=block_as_json["previous_hash"]
     )
 
-    added = blockchain.recive_block(block)
+    added = blockchain.receive_block(block)
 
     if not added:
         response = {

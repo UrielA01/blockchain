@@ -41,7 +41,7 @@ class Blockchain:
         self.broadcast_block(block)
         return block
 
-    def recive_block(self, block: Block) -> bool:
+    def receive_block(self, block: Block) -> bool:
         new_chain = self.chain.copy()
         new_chain.append(block)
 
@@ -121,7 +121,7 @@ class Blockchain:
     def broadcast_transaction(self, transaction: Transaction):
         for node in self.nodes:
             response = requests.post(
-                f'http://{node}/transactions/recive', json=asdict(transaction))
+                f'http://{node}/transactions/receive', json=asdict(transaction))
             if response.status_code != 201:
                 raise Exception('Failed to broadcast transaction')
 
