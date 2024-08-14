@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 import requests
 
 from block import Block
+from consensus import Consensus
 from transaction import Transaction
 
 
@@ -13,6 +14,7 @@ class Blockchain:
     chain: List[Block] = field(default_factory=list)
     current_transactions: List[Transaction] = field(default_factory=list)
     nodes: Set[str] = field(default_factory=set)
+    consensus: Consensus = field(default_factory=Consensus)
 
     def __post_init__(self):
         genesis_block = Block(
@@ -30,7 +32,7 @@ class Blockchain:
             transactions=self.current_transactions,
             previous_hash=previous_hash
         )
-        nonce = self.proof_of_work(block)
+        nonce = self.consensus.proof_of_work(block)
         block.nonce = nonce
         block.hash = block.compute_hash()
         self.current_transactions = []
@@ -43,44 +45,23 @@ class Blockchain:
         new_chain = self.chain.copy()
         new_chain.append(block)
 
-        if self.valid_chain(new_chain):
+        if self.consensus.valid_chain(new_chain):
             self.chain = new_chain
             return True
 
         return False
 
-    def new_transaction(self, sender: str, recipient: str, amount: int) -> int:
-        transaction = Transaction(sender, recipient, amount)
-
-        if not transaction.valid_transaction():
-            raise ValueError("Invalid transaction")
-
+    def new_transaction(self, transaction: Transaction) -> int:
+        timestamps = [
+            transaction.timestamp for transaction in self.current_transactions]
+        if transaction.timestamp in timestamps:
+            raise Exception("Transaction already exists")
         self.current_transactions.append(transaction)
-
-        self.broadcast_transaction(transaction)
-
         return self.last_block.index + 1
 
     @property
     def last_block(self) -> Block:
         return self.chain[-1]
-
-    def valid_nonce(self, block: Block, nonce: int) -> bool:
-        block.nonce = nonce
-        return block.compute_hash()[:4] == "0000"
-
-    def proof_of_work(self, block: Block) -> int:
-        """
-        Simple Proof of Work Algorithm:
-        Find a nonce such that the hash of the block contains leading 4 zeros.
-        :param last_block: <Block> Last block in the chain
-        :return: <int> The valid nonce
-        """
-        nonce = 0
-        while True:
-            if self.valid_nonce(block, nonce):
-                return nonce
-            nonce += 1
 
     def register_node(self, address: str) -> None:
         """
@@ -93,29 +74,6 @@ class Blockchain:
             self.nodes.add(parsed_url.netloc)
         except AttributeError:
             raise ValueError("Invalid URL")
-
-    def valid_chain(self, chain: List[Block]) -> bool:
-        # Determine if a given blockchain is valid
-        previous_block = chain[0]
-        current_index = 1
-
-        while current_index < len(chain):
-            current_block = chain[current_index]
-
-            # Check that the hash of the block is correct
-            if current_block.previous_hash != previous_block.compute_hash():
-                print("Invalid previous hash")
-                return False
-
-            # Check that the Proof of Work is correct
-            if not self.valid_nonce(current_block, current_block.nonce):
-                print("Invalid PoW")
-                return False
-
-            previous_block = current_block
-            current_index += 1
-
-        return True
 
     def resolve_conflicts(self) -> bool:
         """
@@ -149,7 +107,7 @@ class Blockchain:
                 ]
 
                 # Check if the length is longer and the chain is valid
-                if length > max_length and self.valid_chain(chain):
+                if length > max_length and self.consensus.valid_chain(chain):
                     max_length = length
                     new_chain = chain
 
@@ -163,7 +121,7 @@ class Blockchain:
     def broadcast_transaction(self, transaction: Transaction):
         for node in self.nodes:
             response = requests.post(
-                f'http://{node}/transactions/new', json=asdict(transaction))
+                f'http://{node}/transactions/recive', json=asdict(transaction))
             if response.status_code != 201:
                 raise Exception('Failed to broadcast transaction')
 

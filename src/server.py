@@ -1,27 +1,28 @@
 from dataclasses import asdict
 from uuid import uuid4
 from flask import Flask, jsonify, request
-from blockchain import Block, Blockchain
+from block import Block
+from blockchain import Blockchain
 import sys
 
-# Instantiate our node
+from transaction import Transaction
+
 app = Flask(__name__)
 
-# Generate a globally unique address for this node
 node_identifier = str(uuid4()).replace("-", "")
 
-# Instantiate the Blockchain
 blockchain = Blockchain()
 
 
 @app.route('/mine', methods=['GET'])
 def mine():
-    # We must receive a reward for finding the proof.
-    # The sender is "0" to signify that this node has mined a new coin.
-    blockchain.new_transaction(
+    reward_transaction = Transaction(
         sender="0",
         recipient=node_identifier,
         amount=1
+    )
+    blockchain.new_transaction(
+        reward_transaction
     )
 
     # Forge the new Block by adding it to the chain
@@ -40,14 +41,29 @@ def mine():
 def new_transaction():
     values = request.get_json()
 
-    # Check that the required fields are in the POST'ed data
-    required = ["sender", "recipient", "amount"]
-    if not all(k in values for k in required):
+    transaction = Transaction(
+        values["sender"], values["recipient"], values["amount"])
+
+    if not transaction.valid_transaction():
         return "Missing values", 400
 
-    # Create a new Transaction
-    index = blockchain.new_transaction(
+    index = blockchain.new_transaction(transaction)
+    blockchain.broadcast_transaction(transaction)
+    response = {"message": f'Transaction will be added to Block {index}'}
+    return jsonify(response), 201
+
+
+@app.route("/transactions/recive", methods=['POST'])
+def recive_transaction():
+    values = request.get_json()
+
+    transaction = Transaction(
         values["sender"], values["recipient"], values["amount"])
+
+    if not transaction.valid_transaction():
+        return "Missing values", 400
+
+    index = blockchain.new_transaction(transaction)
     response = {"message": f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
 
@@ -91,7 +107,14 @@ def recive_block():
         previous_hash=block_as_json["previous_hash"]
     )
 
-    blockchain.recive_block(block)
+    added = blockchain.recive_block(block)
+
+    if not added:
+        response = {
+            "message": "New block is invalid, not added",
+            "block": block_as_json
+        }
+        return jsonify(response), 401
 
     response = {
         "message": "New block have been added",

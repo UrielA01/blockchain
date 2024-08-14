@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import time
 
 
 @dataclass
@@ -6,6 +7,7 @@ class Transaction:
     sender: str
     recipient: str
     amount: int
+    timestamp: float = field(default_factory=lambda: time.time())
 
     def __repr__(self):
         return f"{self.sender} -> {self.recipient}: {self.amount}"
