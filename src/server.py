@@ -4,10 +4,13 @@ from flask import Flask, jsonify, request
 from block import Block
 from blockchain import Blockchain
 import sys
+import timeit
 
 from transaction import Transaction
 
 app = Flask(__name__)
+app.json.sort_keys = False
+
 
 node_identifier = str(uuid4()).replace("-", "")
 
@@ -16,6 +19,8 @@ blockchain = Blockchain()
 
 @app.route('/mine', methods=['GET'])
 def mine():
+    start = timeit.default_timer()
+
     reward_transaction = Transaction(
         sender="0",
         recipient=node_identifier,
@@ -28,10 +33,12 @@ def mine():
     # Forge the new Block by adding it to the chain
     previous_hash = blockchain.last_block.hash
     block = blockchain.add_block(previous_hash)
+    stop = timeit.default_timer()
 
     response = {
         "message": "New Block Forged",
-        **(asdict(block))
+        **(asdict(block)),
+        "time": stop - start
     }
 
     return jsonify(response), 200
