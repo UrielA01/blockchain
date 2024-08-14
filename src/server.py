@@ -125,9 +125,9 @@ def receive_block():
 
 @app.route("/nodes/resolve", methods=["GET"])
 def consensus():
-    repalced = blockchain.resolve_conflicts()
+    replaced = blockchain.resolve_conflicts()
 
-    if repalced:
+    if replaced:
         response = {
             "message": "Our chain was replaced",
             "new_chain": blockchain.chain
