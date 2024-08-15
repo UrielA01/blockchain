@@ -3,7 +3,7 @@ import json
 from typing import List
 
 from .transaction import Transaction
-from utils import calculate_hash
+from utils.crypto_utils import calculate_sha256
 
 
 @dataclass
@@ -28,4 +28,4 @@ class Block:
 
         # Convert the block's data to a dictionary, sort keys, and dump as JSON string
         block_string = json.dumps(block_as_dict, sort_keys=True).encode()
-        return calculate_hash(block_string)
+        return calculate_sha256(block_string)
