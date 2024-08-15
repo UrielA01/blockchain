@@ -118,6 +118,16 @@ class Blockchain:
 
         return False
 
+    def get_balance(self, address: bytes) -> int:
+        balance = 0
+        for block in self.chain:
+            for transaction in block.transactions:
+                if transaction.sender == address:
+                    balance -= transaction.amount
+                if transaction.recipient == address:
+                    balance += transaction.amount
+        return balance
+
     def broadcast_transaction(self, transaction: Transaction):
         for node in self.nodes:
             response = requests.post(

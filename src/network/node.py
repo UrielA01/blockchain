@@ -18,3 +18,6 @@ class Node:
             return True
         except (ValueError, TypeError):
             return False
+
+    def validate_funds(self, sender: bytes, amount: int) -> bool:
+        return self.blockchain.get_balance(sender) >= amount
