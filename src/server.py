@@ -1,12 +1,12 @@
 from dataclasses import asdict
 from uuid import uuid4
 from flask import Flask, jsonify, request
-from block import Block
-from blockchain import Blockchain
 import sys
 import timeit
 
-from transaction import Transaction
+from blockchain_utils.block import Block
+from blockchain_utils.transaction import Transaction
+from blockchain_utils.blockchain import Blockchain
 
 app = Flask(__name__)
 app.json.sort_keys = False
