@@ -4,9 +4,9 @@ from flask import Flask, jsonify, request
 import sys
 import timeit
 
-from blockchain_utils.block import Block
-from blockchain_utils.transaction import Transaction
-from blockchain_utils.blockchain import Blockchain
+from blockchain_utils import Block
+from blockchain_utils import Transaction
+from blockchain_utils import Blockchain
 
 app = Flask(__name__)
 app.json.sort_keys = False

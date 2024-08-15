@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 import json
 from typing import List
 
-from blockchain_utils.transaction import Transaction
+from .transaction import Transaction
 from utils import calculate_hash
 
 

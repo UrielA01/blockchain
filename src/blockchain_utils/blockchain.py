@@ -4,9 +4,9 @@ from typing import List, Set
 from urllib.parse import urlparse
 import requests
 
-from blockchain_utils.block import Block
-from blockchain_utils.consensus import Consensus
-from blockchain_utils.transaction import Transaction
+from .block import Block
+from .consensus import Consensus
+from .transaction import Transaction
 
 
 @dataclass

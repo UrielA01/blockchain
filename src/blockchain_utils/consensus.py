@@ -1,5 +1,5 @@
 from typing import List
-from blockchain_utils.block import Block
+from .block import Block
 
 
 class Consensus:
