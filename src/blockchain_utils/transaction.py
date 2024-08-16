@@ -1,5 +1,8 @@
+import binascii
 from dataclasses import dataclass, field
+import json
 import time
+from typing import List
 
 from utils.crypto_utils import calculate_sha256
 from wallet import Wallet
@@ -12,11 +15,11 @@ class TransactionInput:
         self.public_key = public_key
         self.signature = signature
 
-    def to_json(self, include_signature: bool = False) -> dict:
+    def to_json(self, include_signature: bool = True, include_public_key: bool = True) -> dict:
         return {
             "transaction_hash": self.transaction_hash,
             "output_index": self.output_index,
-            "public_key": self.public_key,
+            "public_key": self.public_key if include_public_key else "",
             "signature": self.signature if include_signature else ""
         }
 
@@ -38,30 +41,35 @@ class TransactionOutput:
 
 @dataclass
 class Transaction:
-    sender: Wallet
-    recipient: bytes
-    amount: int
+    owner: Wallet
+    inputs: List[TransactionInput]
+    outputs: List[TransactionOutput]
     timestamp: float = field(default_factory=lambda: time.time())
-    signature: str = None
-
-    def __repr__(self):
-        return f"{self.sender.address} -> {self.recipient}: {self.amount}"
 
     def valid_transaction(self) -> bool:
-        return self.amount > 0 and self.sender and self.recipient
+        return self.amount > 0 and self.owner and self.recipient
 
-    def as_dict(self):
+    def tx_data_as_dict(self):
         return {
-            "sender": self.sender.address,
-            "recipient": self.recipient,
-            "amount": self.amount,
+            "inputs": [tx_input.to_json(include_signature=False, include_public_key=False) for tx_input in self.inputs],
+            "outputs": [tx_output.to_json() for tx_output in self.outputs],
             "timestamp": self.timestamp,
-            "signature": self.signature
         }
 
-    def convert_to_bytes(self) -> bytes:
-        return str(self.as_dict()).encode('utf-8')
+    def sign_transaction_data(self):
+        transaction_dict = self.tx_data_as_dict()
+        transaction_bytes = json.dumps(transaction_dict).encode('utf-8')
+        hash = calculate_sha256(transaction_bytes)
+        signature = Wallet.convert_signature_to_str(self.owner.sign(hash))
+        return signature
 
     def __post_init__(self):
         self.signature = Wallet.convert_signature_to_str(
-            self.sender.sign(self.convert_to_bytes()))
+            self.owner.sign(self.convert_to_bytes()))
+
+    def sign(self):
+        signature_hex = binascii.hexlify(
+            self.sign_transaction_data()).decode("utf-8")
+        for transaction_input in self.inputs:
+            transaction_input.signature = signature_hex
+            transaction_input.public_key = self.owner.public_key
