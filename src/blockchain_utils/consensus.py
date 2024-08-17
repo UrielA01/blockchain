@@ -16,23 +16,20 @@ class Consensus:
             nonce += 1
         return nonce
 
-    def valid_chain(self, chain: List[Block]) -> bool:
-        # Determine if a given blockchain is valid
-        previous_block = chain[0]
-        current_index = 1
+    def valid_new_block(self, last_block: Block, new_block: Block) -> bool:
+        if not new_block.index == last_block.index + 1:
+            return False
 
-        while current_index < len(chain):
-            current_block = chain[current_index]
+        if not new_block.previous_hash == last_block.compute_hash():
+            return False
 
-            # Check that the hash of the block is correct
-            if current_block.previous_hash != previous_block.compute_hash():
-                return False
-
-            # Check that the Proof of Work is correct
-            if not self.valid_nonce(current_block, current_block.nonce):
-                return False
-
-            previous_block = current_block
-            current_index += 1
+        if not self.valid_nonce(new_block, new_block.nonce):
+            return False
 
         return True
+
+    def valid_chain(self, last_block: Block) -> bool:
+        while last_block.index > 1 and last_block.previous_block:
+            if not self.valid_new_block(last_block.previous_block, last_block):
+                return False
+            last_block = last_block.previous_block

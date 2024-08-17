@@ -12,6 +12,7 @@ class Block:
     timestamp: float
     transactions: List[Transaction]
     previous_hash: str
+    previous_block: 'Block'
     nonce: int = None
     hash: str = None
 
@@ -25,6 +26,7 @@ class Block:
         """
         block_as_dict = asdict(self)
         block_as_dict.pop('hash', None)
+        block_as_dict.pop('previous_block', None)
 
         # Convert the block's data to a dictionary, sort keys, and dump as JSON string
         block_string = json.dumps(block_as_dict, sort_keys=True).encode()

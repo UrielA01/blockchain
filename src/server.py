@@ -1,4 +1,5 @@
 from dataclasses import asdict
+import time
 from uuid import uuid4
 from flask import Flask, jsonify, request
 import sys
@@ -14,7 +15,13 @@ app.json.sort_keys = False
 
 node_identifier = str(uuid4()).replace("-", "")
 
-blockchain = Blockchain()
+genesis_block = Block(
+    index=1,
+    timestamp=time.time(),
+    transactions=[],
+    previous_hash=None
+)
+blockchain = Blockchain(last_block=genesis_block)
 
 
 @app.route('/mine', methods=['GET'])
@@ -30,9 +37,7 @@ def mine():
         reward_transaction
     )
 
-    # Forge the new Block by adding it to the chain
-    previous_hash = blockchain.last_block.hash
-    block = blockchain.add_block(previous_hash)
+    block = blockchain.add_block()
     stop = timeit.default_timer()
 
     response = {
@@ -76,6 +81,7 @@ def receive_transaction():
 
 
 @app.route("/chain", methods=['GET'])
+# Deprecated for now
 def full_chain():
     response = {
         'chain': blockchain.chain,
