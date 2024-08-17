@@ -56,8 +56,8 @@ def new_transaction():
     transaction = Transaction(
         values["sender"], values["recipient"], values["amount"])
 
-    if not transaction.valid_transaction():
-        return "Missing values", 400
+    # if not transaction.valid_transaction():
+    #     return "Missing values", 400
 
     index = blockchain.new_transaction(transaction)
     blockchain.broadcast_transaction(transaction)
@@ -72,8 +72,8 @@ def receive_transaction():
     transaction = Transaction(
         values["sender"], values["recipient"], values["amount"])
 
-    if not transaction.valid_transaction():
-        return "Missing values", 400
+    # if not transaction.valid_transaction():
+    #     return "Missing values", 400
 
     index = blockchain.new_transaction(transaction)
     response = {"message": f'Transaction will be added to Block {index}'}
