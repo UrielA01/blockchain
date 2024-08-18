@@ -11,7 +11,7 @@ from utils.crypto_utils import calculate_ripemd160, calculate_sha256
 from wallet.wallet import Wallet
 
 
-class Node:
+class NodeTransaction:
     def __init__(self, blockchain: Blockchain):
         self.blockchain = blockchain
         self.transaction_data: dict = {}
@@ -87,7 +87,7 @@ class Node:
             total_out = total_out + amount
         return total_out
 
-    def execute_script(self, unlocking_script, locking_script):
+    def execute_script(self, unlocking_script: str, locking_script: str):
         unlocking_script_list = unlocking_script.split(" ")
         locking_script_list = locking_script.split(" ")
         stack_script = StackScript(self.transaction_data)
