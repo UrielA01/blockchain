@@ -31,6 +31,17 @@ class Node:
         return self.send({"transaction": transaction.tx_data_as_dict()})
 
 
+class OtherNode:
+    def __init__(self, ip: str, port: int):
+        self.base_url = f"http://{ip}:{port}/"
+
+    def send(self, transaction_data: dict) -> requests.Response:
+        url = f"{self.base_url}transactions"
+        req_return = requests.post(url, json=transaction_data)
+        req_return.raise_for_status()
+        return req_return
+
+
 class NodeTransaction:
     def __init__(self, blockchain: Blockchain):
         self.blockchain = blockchain
@@ -123,3 +134,12 @@ class NodeTransaction:
                 class_method(stack_script)
             else:
                 stack_script.push(element)
+
+    def broadcast(self):
+        node_list = [OtherNode("127.0.0.1", 5001),
+                     OtherNode("127.0.0.1", 5002)]
+        for node in node_list:
+            try:
+                node.send(self.transaction_data)
+            except requests.ConnectionError:
+                pass
