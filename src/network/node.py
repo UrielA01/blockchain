@@ -3,12 +3,32 @@ import json
 from typing import List
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
+import requests
 
 from blockchain_utils.blockchain import Blockchain
 from blockchain_utils.script import StackScript
-from blockchain_utils.transaction import Transaction, TransactionInput
+from blockchain_utils.transaction import Transaction, TransactionInput, TransactionOutput
 from utils.crypto_utils import calculate_ripemd160, calculate_sha256
 from wallet.wallet import Wallet
+
+
+class Node:
+    def __init__(self):
+        ip = "127.0.0.1"
+        port = 5000
+        self.base_url = f"http://{ip}:{port}/"
+        self.wallet = Wallet()
+
+    def send(self, transaction_data: dict) -> requests.Response:
+        url = f"{self.base_url}transactions"
+        req_return = requests.post(url, json=transaction_data)
+        req_return.raise_for_status()
+        return req_return
+
+    def process_transaction(self, inputs: List[TransactionInput], outputs: List[TransactionOutput]) -> requests.Response:
+        transaction = Transaction(owner=self, inputs=inputs, outputs=outputs)
+        transaction.sign_inputs()
+        return self.send({"transaction": transaction.tx_data_as_dict()})
 
 
 class NodeTransaction:

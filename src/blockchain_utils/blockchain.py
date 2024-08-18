@@ -11,7 +11,13 @@ from .transaction import Transaction
 
 @dataclass
 class Blockchain:
-    last_block: Block
+    last_block: Block = field(default_factory=lambda: Block(
+        index=1,
+        timestamp=time.time(),
+        transactions=[],
+        previous_hash=None,
+        previous_block=None
+    ))
     length: int = 1
     current_transactions: List[Transaction] = field(default_factory=list)
     nodes: Set[str] = field(default_factory=set)

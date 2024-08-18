@@ -8,6 +8,7 @@ import timeit
 from blockchain_utils import Block
 from blockchain_utils import Transaction
 from blockchain_utils import Blockchain
+from network.node import NodeTransaction
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -15,13 +16,7 @@ app.json.sort_keys = False
 
 node_identifier = str(uuid4()).replace("-", "")
 
-genesis_block = Block(
-    index=1,
-    timestamp=time.time(),
-    transactions=[],
-    previous_hash=None
-)
-blockchain = Blockchain(last_block=genesis_block)
+blockchain = Blockchain()
 
 
 @app.route('/mine', methods=['GET'])
@@ -47,6 +42,20 @@ def mine():
     }
 
     return jsonify(response), 200
+
+
+@app.route("/transactions", methods=['POST'])
+def validate_transaction():
+    content = request.json
+    try:
+        node = NodeTransaction(blockchain)
+        node.receive(transaction=content["transaction"])
+        node.validate_transaction()
+        node.validate_funds()
+        node.broadcast()
+    except Exception as transaction_exception:
+        return f'{transaction_exception}', 400
+    return "Transaction success", 200
 
 
 @app.route("/transactions/new", methods=['POST'])
