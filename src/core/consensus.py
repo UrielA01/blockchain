@@ -6,7 +6,7 @@ class Consensus:
 
     def valid_nonce(self, block: Block, nonce: int) -> bool:
         block.nonce = nonce
-        return block.compute_hash()[:self.difficulty] == "0" * self.difficulty
+        return block.hash[:self.difficulty] == "0" * self.difficulty
 
     def proof_of_work(self, block: Block) -> int:
         nonce = 0
@@ -18,7 +18,7 @@ class Consensus:
         if not new_block.index == last_block.index + 1:
             return False
 
-        if not new_block.previous_hash == last_block.compute_hash():
+        if not new_block.previous_hash == last_block.hash:
             return False
 
         if not self.valid_nonce(new_block, new_block.nonce):
