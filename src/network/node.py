@@ -27,7 +27,7 @@ class Node:
     def process_transaction(self, inputs: List[TransactionInput], outputs: List[TransactionOutput]) -> requests.Response:
         transaction = Transaction(owner=self, inputs=inputs, outputs=outputs)
         transaction.sign_inputs()
-        return self.send({"transaction": transaction.tx_data_as_dict()})
+        return self.send({"transaction": transaction.as_dict})
 
 
 class OtherNode:
@@ -45,8 +45,8 @@ class NodeTransaction:
     def __init__(self, blockchain: Blockchain):
         self.blockchain = blockchain
         self.transaction_data: dict = {}
-        self.inputs = ""
-        self.outputs = ""
+        self.inputs = {}
+        self.outputs = {}
 
     def receive(self, transaction: dict):
         self.transaction_data = transaction
@@ -55,10 +55,10 @@ class NodeTransaction:
 
     def validate_transaction(self):
         for tx_input in self.inputs:
-            input_dict = json.loads(tx_input)
+            input = TransactionInput(transaction_hash=tx_input["transaction_hash"], output_index=tx_input["output_index"])
             locking_script = self.get_locking_script_from_utxo(
-                input_dict["transaction_hash"], input_dict["output_index"])
-            self.execute_script(input_dict["unlocking_script"], locking_script)
+                input.transaction_hash, input.output_index)
+            self.execute_script(tx_input["unlocking_script"], locking_script)
 
     def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):
         transaction_data = self.get_transaction_from_utxo(utxo_hash)

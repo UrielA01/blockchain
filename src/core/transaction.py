@@ -45,14 +45,15 @@ class Transaction:
     inputs: List[TransactionInput]
     outputs: List[TransactionOutput]
 
-    def tx_data_as_dict(self):
+    @property
+    def as_dict(self):
         return {
             "inputs": [tx_input.to_json(with_unlocking_script=False) for tx_input in self.inputs],
             "outputs": [tx_output.to_json() for tx_output in self.outputs],
         }
 
     def sign_transaction_data(self):
-        transaction_dict = self.tx_data_as_dict()
+        transaction_dict = self.as_dict
         transaction_bytes = json.dumps(transaction_dict).encode('utf-8')
         signature = Wallet.convert_signature_to_str(
             self.owner.sign(transaction_bytes))
