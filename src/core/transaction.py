@@ -1,8 +1,8 @@
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
-from wallet import Wallet
+from wallet.wallet import Wallet
 
 
 class TransactionInput:

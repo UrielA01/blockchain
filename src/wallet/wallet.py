@@ -1,8 +1,6 @@
 import binascii
-from typing import List
 
 import base58
-import requests
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 

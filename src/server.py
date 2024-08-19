@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from flask import Flask, jsonify, request
 
+from core.block import Block
 from core.blockchain import Blockchain
 from core.transaction import Transaction
 from network.node import NodeTransaction

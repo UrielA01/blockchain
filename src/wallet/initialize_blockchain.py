@@ -1,11 +1,11 @@
 import time
 
-from users.albert import private_key as albert_private_key
-from users.bertrand import private_key as bertrand_private_key
-from users.camille import private_key as camille_private_key
 from core.block import Block
 from core.blockchain import Blockchain
 from core.transaction import TransactionInput, TransactionOutput
+from users.albert import private_key as albert_private_key
+from users.bertrand import private_key as bertrand_private_key
+from users.camille import private_key as camille_private_key
 from wallet.wallet import Wallet
 
 albert_wallet = Wallet(private_key=albert_private_key)

@@ -1,6 +1,5 @@
 import json
 from dataclasses import asdict, dataclass
-from typing import List
 
 from utils.crypto_utils import calculate_sha256
 
