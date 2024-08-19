@@ -47,7 +47,7 @@ class Transaction:
 
     def tx_data_as_dict(self):
         return {
-            "inputs": [tx_input.to_json(include_signature=False, include_public_key=False) for tx_input in self.inputs],
+            "inputs": [tx_input.to_json(with_unlocking_script=False) for tx_input in self.inputs],
             "outputs": [tx_output.to_json() for tx_output in self.outputs],
         }
 

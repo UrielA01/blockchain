@@ -10,7 +10,7 @@ from utils.crypto_utils import calculate_sha256
 class Block:
     index: int
     timestamp: float
-    transactions: List[Transaction]
+    transaction_data: Transaction
     previous_hash: str
     previous_block: 'Block'
     nonce: int = None
@@ -18,6 +18,12 @@ class Block:
 
     def __post_init__(self):
         self.hash = self.compute_hash()
+
+    @property
+    def transaction_hash(self) -> str:
+        transaction_bytes = json.dumps(
+            self.transaction_data.tx_data_as_dict(), indent=2).encode('utf-8')
+        return calculate_sha256(transaction_bytes)
 
     def compute_hash(self) -> str:
         """
