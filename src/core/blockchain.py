@@ -24,6 +24,16 @@ class Blockchain:
     nodes: Set[str] = field(default_factory=set)
     consensus: Consensus = field(default_factory=Consensus)
 
+    def add_new_block(self, transaction: Transaction):
+        new_block = Block(
+            index=len(self.current_transactions) + 1,
+            transaction_data=transaction,
+            previous_hash=self.last_block.hash,
+            previous_block=self.last_block,
+        )
+        self.last_block = new_block
+        return new_block
+
     def add_block(self) -> Block:
         block = Block(
             index=self.length + 1,

@@ -1,5 +1,6 @@
 import json
-from dataclasses import asdict, dataclass
+import time
+from dataclasses import asdict, dataclass, field
 
 from src.core.transaction import Transaction
 from src.utils.crypto_utils import calculate_sha256
@@ -8,10 +9,10 @@ from src.utils.crypto_utils import calculate_sha256
 @dataclass
 class Block:
     index: int
-    timestamp: float
     transaction_data: Transaction
     previous_hash: str
     previous_block: 'Block'
+    timestamp: float = field(default_factory=lambda: time.time())
     nonce: int = None
     hash: str = None
 

@@ -6,9 +6,9 @@ from uuid import uuid4
 from flask import Flask, jsonify, request
 
 from src.core.block import Block
-from src.core.blockchain import Blockchain
 from src.core.transaction import Transaction
 from src.network.node import NodeTransaction
+from src.wallet.initialize_blockchain import initialize_blockchain
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -16,7 +16,7 @@ app.json.sort_keys = False
 
 node_identifier = str(uuid4()).replace("-", "")
 
-blockchain = Blockchain()
+blockchain = initialize_blockchain()
 
 
 @app.route('/mine', methods=['GET'])
