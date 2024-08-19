@@ -5,7 +5,7 @@ from src.utils.crypto_utils import calculate_sha256
 
 
 class Node:
-    def __init__(self, value: int, left_child=None, right_child=None):
+    def __init__(self, value: str, left_child=None, right_child=None):
         self.value = value
         self.left_child = left_child
         self.right_child = right_child
@@ -15,13 +15,15 @@ class MerkleTree:
     def __init__(self):
         self.root = None
 
-    def compute_tree_depth(self, number_of_leaves: int) -> int:
+    @staticmethod
+    def compute_tree_depth(number_of_leaves: int) -> int:
         return math.ceil(math.log2(number_of_leaves))
 
+    @staticmethod
     def is_power_of_2(number_of_leaves: int) -> bool:
         return math.log2(number_of_leaves).is_integer()
 
-    def fill_set(self, list_of_nodes: list[str]) -> list[str]:
+    def fill_set(self, list_of_nodes: list[Node]) -> list[Node]:
         """
         Fills the given list of nodes to make it a complete binary tree.
 
@@ -53,6 +55,7 @@ class MerkleTree:
         old_set_of_nodes = self.fill_set(old_set_of_nodes)
         tree_depth = self.compute_tree_depth(len(old_set_of_nodes))
 
+        new_set_of_nodes = []
         for i in range(0, tree_depth):
             num_nodes = 2**(tree_depth - i)
             new_set_of_nodes = []
