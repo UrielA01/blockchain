@@ -9,8 +9,16 @@ from utils.crypto_utils import calculate_ripemd160, calculate_sha256
 
 
 class Wallet:
-    def __init__(self):
-        self.private_key, self.public_key, self.address = initialize_wallet()
+    def __init__(self, private_key: str = None):
+        if private_key:
+            self.private_key = RSA.import_key(private_key)
+        else:
+            self.private_key = RSA.generate(2048)
+        self.public_key = self.private_key.publickey().export_key()
+
+        first_key_hash = calculate_sha256(self.public_key)
+        self.public_key_hash = calculate_ripemd160(first_key_hash)
+        self.address = base58.b58encode(self.public_key_hash)
 
     def sign(self, transaction: bytes) -> bytes:
         """
@@ -50,13 +58,3 @@ class Wallet:
             return True
         except (ValueError, TypeError):
             return False
-
-
-def initialize_wallet():
-    private_key = RSA.generate(2048)
-    public_key = private_key.publickey().export_key()
-
-    first_key_hash = calculate_sha256(public_key)
-    second_key_hash = calculate_ripemd160(first_key_hash)
-    address = base58.b58encode(second_key_hash)
-    return private_key, public_key, address
