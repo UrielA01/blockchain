@@ -5,9 +5,9 @@ from urllib.parse import urlparse
 
 import requests
 
-from .block import Block
-from .consensus import Consensus
-from .transaction import Transaction
+from src.core.block import Block
+from src.core.consensus import Consensus
+from src.core.transaction import Transaction
 
 
 @dataclass
@@ -15,7 +15,7 @@ class Blockchain:
     last_block: Block = field(default_factory=lambda: Block(
         index=1,
         timestamp=time.time(),
-        transactions=[],
+        transaction_data=None,
         previous_hash=None,
         previous_block=None
     ))

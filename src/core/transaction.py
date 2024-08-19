@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 from typing import List
 
-from wallet.wallet import Wallet
+from src.wallet.wallet import Wallet
 
 
 class TransactionInput:

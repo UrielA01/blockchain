@@ -4,7 +4,7 @@ import base58
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 
-from utils.crypto_utils import calculate_ripemd160, calculate_sha256
+from src.utils.crypto_utils import calculate_sha256, calculate_ripemd160
 
 
 class Wallet:

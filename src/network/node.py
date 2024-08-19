@@ -4,11 +4,11 @@ from typing import List
 
 import requests
 
-from core.blockchain import Blockchain
-from core.script import StackScript
-from core.transaction import Transaction, TransactionInput, TransactionOutput
-from utils.crypto_utils import calculate_ripemd160, calculate_sha256
-from wallet.wallet import Wallet
+from src.core.blockchain import Blockchain
+from src.core.script import StackScript
+from src.core.transaction import Transaction, TransactionInput, TransactionOutput
+from src.utils.crypto_utils import calculate_ripemd160, calculate_sha256
+from src.wallet.wallet import Wallet
 
 
 class Node:

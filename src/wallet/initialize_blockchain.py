@@ -1,12 +1,13 @@
 import time
 
-from core.block import Block
-from core.blockchain import Blockchain
-from core.transaction import TransactionInput, TransactionOutput
-from users.albert import private_key as albert_private_key
-from users.bertrand import private_key as bertrand_private_key
-from users.camille import private_key as camille_private_key
-from wallet.wallet import Wallet
+from src.core.block import Block
+from src.core.blockchain import Blockchain
+from src.core.transaction import TransactionInput, TransactionOutput
+from src.wallet.wallet import Wallet
+from src.users.albert import private_key as albert_private_key
+from src.users.bertrand import private_key as bertrand_private_key
+from src.users.camille import private_key as camille_private_key
+
 
 albert_wallet = Wallet(private_key=albert_private_key)
 bertrand_wallet = Wallet(private_key=bertrand_private_key)

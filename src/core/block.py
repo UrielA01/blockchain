@@ -1,9 +1,8 @@
 import json
 from dataclasses import asdict, dataclass
 
-from utils.crypto_utils import calculate_sha256
-
-from .transaction import Transaction
+from src.core.transaction import Transaction
+from src.utils.crypto_utils import calculate_sha256
 
 
 @dataclass

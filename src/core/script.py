@@ -3,8 +3,8 @@ import json
 
 from Crypto.PublicKey import RSA
 
-from utils.crypto_utils import calculate_ripemd160, calculate_sha256
-from wallet.wallet import Wallet
+from src.utils.crypto_utils import calculate_sha256, calculate_ripemd160
+from src.wallet.wallet import Wallet
 
 
 class Stack:

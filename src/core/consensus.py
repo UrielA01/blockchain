@@ -1,5 +1,4 @@
-from .block import Block
-
+from src.core.block import Block
 
 class Consensus:
     def __init__(self):
