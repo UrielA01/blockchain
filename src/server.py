@@ -1,13 +1,12 @@
-from dataclasses import asdict
-import time
-from uuid import uuid4
-from flask import Flask, jsonify, request
 import sys
 import timeit
+from dataclasses import asdict
+from uuid import uuid4
 
-from blockchain_utils import Block
-from blockchain_utils import Transaction
-from blockchain_utils import Blockchain
+from flask import Flask, jsonify, request
+
+from core.blockchain import Blockchain
+from core.transaction import Transaction
 from network.node import NodeTransaction
 
 app = Flask(__name__)

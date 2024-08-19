@@ -1,9 +1,10 @@
-from dataclasses import asdict, dataclass
 import json
+from dataclasses import asdict, dataclass
 from typing import List
 
-from .transaction import Transaction
 from utils.crypto_utils import calculate_sha256
+
+from .transaction import Transaction
 
 
 @dataclass

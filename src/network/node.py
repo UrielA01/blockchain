@@ -1,13 +1,12 @@
 import copy
 import json
 from typing import List
-from Crypto.PublicKey import RSA
-from Crypto.Signature import pkcs1_15
+
 import requests
 
-from blockchain_utils.blockchain import Blockchain
-from blockchain_utils.script import StackScript
-from blockchain_utils.transaction import Transaction, TransactionInput, TransactionOutput
+from core.blockchain import Blockchain
+from core.script import StackScript
+from core.transaction import Transaction, TransactionInput, TransactionOutput
 from utils.crypto_utils import calculate_ripemd160, calculate_sha256
 from wallet.wallet import Wallet
 

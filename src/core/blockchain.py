@@ -1,7 +1,8 @@
-from dataclasses import asdict, dataclass, field
 import time
+from dataclasses import asdict, dataclass, field
 from typing import List, Set
 from urllib.parse import urlparse
+
 import requests
 
 from .block import Block

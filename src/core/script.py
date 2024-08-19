@@ -1,5 +1,6 @@
 import binascii
 import json
+
 from Crypto.PublicKey import RSA
 
 from utils.crypto_utils import calculate_ripemd160, calculate_sha256
