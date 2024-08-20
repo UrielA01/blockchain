@@ -1,4 +1,7 @@
 # blockchain
 
-run 
-```python src/server.py```
+```
+pip install -r requirements.txt
+export FLASK_APP=src/server.py
+flask run
+```
