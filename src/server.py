@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request
 
 from src.core.block import Block
 from src.core.transaction import Transaction
-from src.network.node import NodeTransaction
+from src.network.node import ReceiveNode
 from src.wallet.initialize_blockchain import initialize_blockchain
 
 app = Flask(__name__)
@@ -22,7 +22,7 @@ blockchain = initialize_blockchain()
 def validate_transaction():
     content = request.json
     try:
-        node = NodeTransaction(blockchain)
+        node = ReceiveNode(blockchain)
         node.receive(transaction=content)
         node.validate_transaction()
         node.validate_funds()

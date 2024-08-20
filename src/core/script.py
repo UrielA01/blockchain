@@ -19,13 +19,10 @@ class Stack:
 
 
 class StackScript(Stack):
-    def __init__(self, transaction_data: dict):
+    def __init__(self, script: str, transaction_bytes: bytes):
         super().__init__()
-        for count, tx_input in enumerate(transaction_data["inputs"]):
-            tx_input_dict = json.loads(tx_input)
-            tx_input_dict.pop("unlocking_script")
-            transaction_data["inputs"][count] = json.dumps(tx_input_dict)
-        self.transaction_data = transaction_data
+        self.script = script.split(" ")
+        self.transaction_bytes = transaction_bytes
 
     def op_dup(self):
         public_key = self.pop()
@@ -45,6 +42,14 @@ class StackScript(Stack):
         public_key = self.pop()
         signature = self.pop()
         public_key_bytes = public_key.encode("utf-8")
-        transaction_bytes = json.dumps(
-            self.transaction_data, indent=2).encode('utf-8')
-        Wallet.valid_signature(signature, public_key_bytes, transaction_bytes)
+        if not Wallet.valid_signature(signature, public_key_bytes, self.transaction_bytes):
+            raise ValueError("Invalid signature")
+
+
+    def execute(self):
+        for element in self.script:
+            if element.startswith("OP"):
+                class_method = getattr(StackScript, element.lower())
+                class_method(self)
+            else:
+                self.push(element)

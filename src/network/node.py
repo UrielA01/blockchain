@@ -1,4 +1,3 @@
-import copy
 import json
 from typing import List
 
@@ -7,7 +6,6 @@ import requests
 from src.core.blockchain import Blockchain
 from src.core.script import StackScript
 from src.core.transaction import Transaction, TransactionInput, TransactionOutput
-from src.utils.crypto_utils import calculate_ripemd160, calculate_sha256
 from src.wallet.wallet import Wallet
 
 
@@ -41,7 +39,7 @@ class OtherNode:
         return req_return
 
 
-class NodeTransaction:
+class ReceiveNode:
     def __init__(self, blockchain: Blockchain):
         self.blockchain = blockchain
         self.transaction_data: dict = {}
@@ -53,59 +51,24 @@ class NodeTransaction:
         self.inputs = transaction["inputs"]
         self.outputs = transaction["outputs"]
 
-    def validate_transaction(self):
-        for tx_input in self.inputs:
-            input_as_type = TransactionInput(transaction_hash=tx_input["transaction_hash"], output_index=tx_input["output_index"])
-            locking_script = self.get_locking_script_from_utxo(
-                input_as_type.transaction_hash, input_as_type.output_index)
-            self.execute_script(tx_input["unlocking_script"], locking_script)
-
-    def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):
-        transaction_data = self.get_transaction_from_utxo(utxo_hash)
-        return json.loads(transaction_data["outputs"][utxo_index])["locking_script"]
-
-    def validate_transaction_signature(self):
-        transaction_data = copy.deepcopy(self.transaction_data)
-        for count, tx_input in enumerate(transaction_data["inputs"]):
-            tx_input_dict = json.loads(tx_input)
-            public_key = tx_input_dict.pop("public_key")
-            signature = tx_input_dict.pop("signature")
-            transaction_data["inputs"][count] = json.dumps(tx_input_dict)
-            transaction_bytes = json.dumps(
-                transaction_data, indent=2).encode('utf-8')
-            if not Wallet.valid_signature(signature, public_key, transaction_bytes):
-                raise ValueError("Invalid signature")
-
-    def get_transaction_from_utxo(self, utxo_hash: str) -> dict:
+    def get_transaction_from_utxo(self, utxo_hash: str) -> Transaction:
         current_block = self.blockchain.last_block
         while current_block:
             if utxo_hash == current_block.transaction_hash:
                 return current_block.transaction_data
             current_block = current_block.previous_block
 
-    def validate_funds_are_owned_by_sender(self):
-        for tx_input in self.inputs:
-            input_dict = json.loads(tx_input)
-            public_key = input_dict["public_key"]
-            sender_public_key_hash = calculate_ripemd160(calculate_sha256(
-                public_key))
-            transaction_data = self.get_transaction_from_utxo(
-                input_dict["transaction_hash"])
-            public_key_hash = json.loads(
-                transaction_data["outputs"][input_dict["output_index"]])["public_key_hash"]
-            assert public_key_hash == sender_public_key_hash
-
-    def validate_funds(self):
-        assert self.get_total_amount_in_inputs() == self.get_total_amount_in_outputs()
+    def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):
+        transaction = self.get_transaction_from_utxo(utxo_hash)
+        return transaction.outputs[utxo_index].locking_script
 
     def get_total_amount_in_inputs(self) -> int:
         total_in = 0
         for tx_input in self.inputs:
             input_dict = json.loads(tx_input)
-            transaction_data = self.get_transaction_from_utxo(
+            transaction = self.get_transaction_from_utxo(
                 input_dict["transaction_hash"])
-            utxo_amount = json.loads(
-                transaction_data["outputs"][input_dict["output_index"]])["amount"]
+            utxo_amount = transaction.outputs[input_dict["output_index"]].amount
             total_in = total_in + utxo_amount
         return total_in
 
@@ -117,22 +80,20 @@ class NodeTransaction:
             total_out = total_out + amount
         return total_out
 
-    def execute_script(self, unlocking_script: str, locking_script: str):
-        unlocking_script_list = unlocking_script.split(" ")
-        locking_script_list = locking_script.split(" ")
-        stack_script = StackScript(self.transaction_data)
-        for element in unlocking_script_list:
-            if element.startswith("OP"):
-                class_method = getattr(StackScript, element.lower())
-                class_method(stack_script)
-            else:
-                stack_script.push(element)
-        for element in locking_script_list:
-            if element.startswith("OP"):
-                class_method = getattr(StackScript, element.lower())
-                class_method(stack_script)
-            else:
-                stack_script.push(element)
+    def validate_funds(self):
+        assert self.get_total_amount_in_inputs() == self.get_total_amount_in_outputs()
+
+    def validate_transaction(self):
+        for tx_input in self.inputs:
+            input_as_type = TransactionInput(transaction_hash=tx_input["transaction_hash"], output_index=tx_input["output_index"])
+            locking_script = self.get_locking_script_from_utxo(
+                input_as_type.transaction_hash, input_as_type.output_index)
+            transaction_bytes = json.dumps(
+            self.transaction_data, indent=2).encode('utf-8')
+            unlock_stack_script = StackScript(tx_input["unlocking_script"], transaction_bytes)
+            lock_stack_script = StackScript(locking_script, transaction_bytes)
+            unlock_stack_script.execute()
+            lock_stack_script.execute()
 
     def broadcast(self):
         node_list = [OtherNode("127.0.0.1", 5001),

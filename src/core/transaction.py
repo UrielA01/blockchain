@@ -53,8 +53,7 @@ class Transaction:
         }
 
     def sign_transaction_data(self):
-        transaction_dict = self.as_dict
-        transaction_bytes = json.dumps(transaction_dict).encode('utf-8')
+        transaction_bytes = json.dumps(self.as_dict).encode('utf-8')
         signature = Wallet.convert_signature_to_str(
             self.owner.sign(transaction_bytes))
         return signature
@@ -62,8 +61,7 @@ class Transaction:
     def sign_inputs(self):
         signature = self.sign_transaction_data()
         for transaction_input in self.inputs:
-            transaction_input.signature = signature
-            transaction_input.public_key = self.owner.public_key
+            transaction_input.unlocking_script = f"{signature} {self.owner.public_key_hex}"
 
     def send_to_nodes(self) -> dict:
         return {

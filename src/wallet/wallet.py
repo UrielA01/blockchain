@@ -20,6 +20,10 @@ class Wallet:
         self.public_key_hash = calculate_ripemd160(first_key_hash)
         self.address = base58.b58encode(self.public_key_hash)
 
+    @property
+    def public_key_hex(self):
+        return binascii.hexlify(self.public_key).decode("utf-8")
+
     def sign(self, transaction: bytes) -> bytes:
         """
         Sign a message with the wallet's private key.

@@ -24,7 +24,7 @@ class Block:
     @property
     def hash(self) -> str:
         """
-        Creates a SHA-256 hash of the block's contents using the dataclass dictionary representation.
+        Creates an SHA-256 hash of the block's contents using the dataclass dictionary representation.
         :return: <str> Hash of the block
         """
         block_as_dict = {
