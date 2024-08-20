@@ -41,13 +41,10 @@ class StackScript(Stack):
         second_last_element = self.pop()
         assert last_element == second_last_element
 
-    def op_checksig(self, transaction_data: dict):
+    def op_checksig(self):
         public_key = self.pop()
         signature = self.pop()
-        signature_decoded = Wallet.convert_signature_to_str(signature)
         public_key_bytes = public_key.encode("utf-8")
-        public_key_object = RSA.import_key(
-            binascii.unhexlify(public_key_bytes))
         transaction_bytes = json.dumps(
             self.transaction_data, indent=2).encode('utf-8')
-        Wallet.valid_signature(signature, public_key_object, transaction_bytes)
+        Wallet.valid_signature(signature, public_key_bytes, transaction_bytes)

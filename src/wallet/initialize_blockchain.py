@@ -50,6 +50,6 @@ def initialize_blockchain() -> Blockchain:
                                  amount=25)
     transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0], owner=bertrand_wallet)
 
-    block_3 = blockchain.add_new_block(transaction)
+    blockchain.add_new_block(transaction)
 
     return blockchain

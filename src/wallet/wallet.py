@@ -1,6 +1,7 @@
 import binascii
 
 import base58
+from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 
@@ -23,11 +24,11 @@ class Wallet:
         """
         Sign a message with the wallet's private key.
 
-        :param message: The message to sign (in bytes).
+        :param transaction: The message to sign (in bytes).
         :return: The digital signature (base64 encoded).
         """
-        # Create a SHA-256 hash of the message
-        hash_obj = calculate_sha256(transaction)
+        # Create an SHA-256 hash of the message
+        hash_obj = SHA256.new(transaction)
 
         # Sign the hash using the private key
         signature = pkcs1_15.new(self.private_key).sign(hash_obj)
@@ -45,10 +46,11 @@ class Wallet:
 
         :param message: The original message (in bytes).
         :param signature: The signature to verify (in bytes).
+        :param public_key: public key (in bytes).
         :return: True if the signature is valid, False otherwise.
         """
-        # Create a SHA-256 hash of the message
-        hash_obj = calculate_sha256(message)
+        # Create an SHA-256 hash of the message
+        hash_obj = SHA256.new(message)
 
         try:
             # Verify the signature

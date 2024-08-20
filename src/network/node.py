@@ -25,7 +25,7 @@ class Node:
         return req_return
 
     def process_transaction(self, inputs: List[TransactionInput], outputs: List[TransactionOutput]) -> requests.Response:
-        transaction = Transaction(owner=self, inputs=inputs, outputs=outputs)
+        transaction = Transaction(owner=self.wallet, inputs=inputs, outputs=outputs)
         transaction.sign_inputs()
         return self.send({"transaction": transaction.as_dict})
 
@@ -55,9 +55,9 @@ class NodeTransaction:
 
     def validate_transaction(self):
         for tx_input in self.inputs:
-            input = TransactionInput(transaction_hash=tx_input["transaction_hash"], output_index=tx_input["output_index"])
+            input_as_type = TransactionInput(transaction_hash=tx_input["transaction_hash"], output_index=tx_input["output_index"])
             locking_script = self.get_locking_script_from_utxo(
-                input.transaction_hash, input.output_index)
+                input_as_type.transaction_hash, input_as_type.output_index)
             self.execute_script(tx_input["unlocking_script"], locking_script)
 
     def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):
