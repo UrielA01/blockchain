@@ -54,8 +54,8 @@ class ReceiveNode:
     def get_transaction_from_utxo(self, utxo_hash: str) -> Transaction:
         current_block = self.blockchain.last_block
         while current_block:
-            if utxo_hash == current_block.transaction_hash:
-                return current_block.transaction_data
+            if utxo_hash == current_block.transactions.hash:
+                return current_block.transactions
             current_block = current_block.previous_block
 
     def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):

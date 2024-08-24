@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass
 from typing import List
 
+from src.utils.crypto_utils import calculate_sha256
 from src.wallet.wallet import Wallet
 
 
@@ -51,6 +52,12 @@ class Transaction:
             "inputs": [tx_input.to_json(with_unlocking_script=False) for tx_input in self.inputs],
             "outputs": [tx_output.to_json() for tx_output in self.outputs],
         }
+
+    @property
+    def hash(self):
+        transaction_bytes = json.dumps(
+            self.to_dict, indent=2).encode('utf-8')
+        return calculate_sha256(transaction_bytes)
 
     def sign_transaction_data(self):
         transaction_bytes = json.dumps(self.to_dict).encode('utf-8')
