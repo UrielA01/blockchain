@@ -18,7 +18,7 @@ class Block:
     @property
     def transaction_hash(self) -> str:
         transaction_bytes = json.dumps(
-            self.transaction_data.as_dict, indent=2).encode('utf-8')
+            self.transaction_data.to_dict, indent=2).encode('utf-8')
         return calculate_sha256(transaction_bytes)
 
     @property
@@ -30,7 +30,7 @@ class Block:
         block_as_dict = {
             'index': self.index,
             'timestamp': self.timestamp,
-            'transactions': self.transaction_data.as_dict,
+            'transactions': self.transaction_data.to_dict,
             'previous_hash': self.previous_hash,
             'nonce': self.nonce
         }
