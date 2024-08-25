@@ -90,17 +90,6 @@ class Transaction:
         outputs = [TransactionOutput.from_json(output_data) for output_data in data['outputs']]
         return Transaction(inputs, outputs)
 
-    from src.core.blockchain import Blockchain
-    def validate_self(self, blockchain: Blockchain):
-        from src.core.transactions.transaction_validation import TransactionValidation
-        validate = TransactionValidation(transaction=self, blockchain=blockchain)
-        from src.core.transactions.transaction_validation import TransactionException
-        try:
-            validate.validate_scripts()
-            validate.validate_funds()
-        except TransactionException as e:
-            print(e.message)
-
     def store(self):
         current_transactions = get_transactions_from_memory()
         current_transactions.append(self.to_dict)
