@@ -50,8 +50,6 @@ def initialize_blockchain() -> Blockchain:
     transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
     transaction.sign_inputs(albert_wallet)
 
-    print(transaction.send_to_nodes())
-
     blockchain.add_new_block_d(transaction)
 
     return blockchain
