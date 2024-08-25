@@ -23,8 +23,8 @@ class Node:
         return req_return
 
     def process_transaction(self, inputs: List[TransactionInput], outputs: List[TransactionOutput]) -> requests.Response:
-        transaction = Transaction(owner=self.wallet, inputs=inputs, outputs=outputs)
-        transaction.sign_inputs()
+        transaction = Transaction(inputs=inputs, outputs=outputs)
+        transaction.sign_inputs(self.wallet)
         return self.send({"transaction": transaction.to_dict})
 
 

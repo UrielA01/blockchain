@@ -1,5 +1,4 @@
 import json
-from dataclasses import dataclass
 from typing import List
 
 from src.utils.crypto_utils import calculate_sha256
@@ -40,11 +39,10 @@ class TransactionOutput:
         })
 
 
-@dataclass
 class Transaction:
-    owner: Wallet
-    inputs: List[TransactionInput]
-    outputs: List[TransactionOutput]
+    def __init__(self, inputs: List[TransactionInput], outputs: List[TransactionOutput]):
+        self.inputs = inputs
+        self.outputs = outputs
 
     @property
     def to_dict(self):
@@ -59,16 +57,16 @@ class Transaction:
             self.to_dict, indent=2).encode('utf-8')
         return calculate_sha256(transaction_bytes)
 
-    def sign_transaction_data(self):
+    def sign_transaction_data(self, owner: Wallet):
         transaction_bytes = json.dumps(self.to_dict).encode('utf-8')
         signature = Wallet.convert_signature_to_str(
-            self.owner.sign(transaction_bytes))
+            owner.sign(transaction_bytes))
         return signature
 
-    def sign_inputs(self):
+    def sign_inputs(self, owner: Wallet):
         signature = self.sign_transaction_data()
         for transaction_input in self.inputs:
-            transaction_input.unlocking_script = f"{signature} {self.owner.public_key_hex}"
+            transaction_input.unlocking_script = f"{signature} {owner.public_key_hex}"
 
     def send_to_nodes(self) -> dict:
         return {

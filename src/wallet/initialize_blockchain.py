@@ -21,7 +21,7 @@ def initialize_blockchain() -> Blockchain:
                                output_index=0)
     output_0 = TransactionOutput(public_key_hash=albert_wallet.public_key_hash,
                                  amount=40)
-    transaction = Transaction(outputs=[output_0], inputs=[input_0], owner=bertrand_wallet)
+    transaction = Transaction(outputs=[output_0], inputs=[input_0])
     block_0 = blockchain.add_new_block(transaction)
 
     input_0 = TransactionInput(transaction_hash=block_0.transactions.hash,
@@ -30,7 +30,7 @@ def initialize_blockchain() -> Blockchain:
                                  amount=30)
     output_1 = TransactionOutput(public_key_hash=albert_wallet.public_key_hash,
                                  amount=10)
-    transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0], owner=bertrand_wallet)
+    transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
 
     block_1 = blockchain.add_new_block(transaction)
 
@@ -38,7 +38,7 @@ def initialize_blockchain() -> Blockchain:
                                output_index=1)
     output_0 = TransactionOutput(public_key_hash=camille_wallet.public_key_hash,
                                  amount=10)
-    transaction = Transaction(outputs=[output_0], inputs=[input_0], owner=bertrand_wallet)
+    transaction = Transaction(outputs=[output_0], inputs=[input_0])
 
     block_2 = blockchain.add_new_block(transaction)
 
@@ -48,7 +48,7 @@ def initialize_blockchain() -> Blockchain:
                                  amount=5)
     output_1 = TransactionOutput(public_key_hash=bertrand_wallet.public_key_hash,
                                  amount=25)
-    transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0], owner=bertrand_wallet)
+    transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
 
     blockchain.add_new_block(transaction)
 
