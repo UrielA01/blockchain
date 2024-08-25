@@ -14,9 +14,8 @@ class Stack:
 
 
 class StackScript(Stack):
-    def __init__(self, script: str, transaction_bytes: bytes):
+    def __init__(self, transaction_bytes: bytes):
         super().__init__()
-        self.script = script.split(" ")
         self.transaction_bytes = transaction_bytes
 
     def op_dup(self):
@@ -42,8 +41,8 @@ class StackScript(Stack):
             raise ValueError("Invalid signature")
 
 
-    def execute(self):
-        for element in self.script:
+    def execute(self, script: str):
+        for element in script:
             if element.startswith("OP"):
                 class_method = getattr(StackScript, element.lower())
                 class_method(self)

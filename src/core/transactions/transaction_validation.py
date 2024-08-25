@@ -51,12 +51,11 @@ class TransactionValidation:
             for tx_input in self.transaction.inputs:
                 locking_script = self.get_locking_script_from_utxo(
                     tx_input.transaction_hash, tx_input.output_index)
+                unlocking_script = tx_input.unlocking_script
                 transaction_bytes = json.dumps(
                 self.transaction.to_dict, indent=2).encode('utf-8')
-                unlock_stack_script = StackScript(tx_input.unlocking_script, transaction_bytes)
-                lock_stack_script = StackScript(locking_script, transaction_bytes)
-                unlock_stack_script.execute()
-                lock_stack_script.execute()
+                stack_script = StackScript(transaction_bytes)
+                stack_script.execute(unlocking_script)
+                stack_script.execute(locking_script)
         except ValueError as e:
             raise TransactionException(expression="", message="Invalid transaction inputs")
-
