@@ -41,7 +41,7 @@ class TransactionValidation:
     def validate_funds(self):
         assert self.get_total_amount_in_inputs() == self.get_total_amount_in_outputs()
 
-    def validate(self):
+    def validate_scripts(self):
         for tx_input in self.transaction.inputs:
             locking_script = self.get_locking_script_from_utxo(
                 tx_input.transaction_hash, tx_input.output_index)
