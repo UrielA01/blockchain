@@ -28,6 +28,7 @@ def initialize_blockchain() -> Blockchain:
     output_1 = TransactionOutput(public_key_hash=albert_wallet.public_key_hash,
                                  amount=10)
     transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
+    transaction.sign_inputs(camille_wallet)
 
     block_1 = blockchain.add_new_block(transaction)
 
@@ -36,6 +37,7 @@ def initialize_blockchain() -> Blockchain:
     output_0 = TransactionOutput(public_key_hash=camille_wallet.public_key_hash,
                                  amount=10)
     transaction = Transaction(outputs=[output_0], inputs=[input_0])
+    transaction.sign_inputs(albert_wallet)
 
     block_2 = blockchain.add_new_block(transaction)
 
@@ -46,6 +48,9 @@ def initialize_blockchain() -> Blockchain:
     output_1 = TransactionOutput(public_key_hash=bertrand_wallet.public_key_hash,
                                  amount=25)
     transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
+    transaction.sign_inputs(albert_wallet)
+
+    print(transaction.send_to_nodes())
 
     blockchain.add_new_block(transaction)
 

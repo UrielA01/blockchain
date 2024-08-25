@@ -5,6 +5,9 @@ from src.utils.crypto_utils import calculate_sha256
 from src.utils.io_mem_pool import get_transactions_from_memory, store_transactions_in_memory
 from src.wallet.wallet import Wallet
 
+def handle_transaction_data(data):
+    if isinstance(data, str):
+        return json.loads(data)
 
 class TransactionInput:
     def __init__(self, transaction_hash: str, output_index: int, unlocking_script: str = ""):
@@ -27,6 +30,7 @@ class TransactionInput:
 
     @staticmethod
     def from_json(data: dict) -> 'TransactionInput':
+        data = handle_transaction_data(data)
         transaction_hash = data['transaction_hash']
         output_index = data['output_index']
         unlocking_script = data['unlocking_script']
@@ -50,6 +54,7 @@ class TransactionOutput:
 
     @staticmethod
     def from_json(data: dict) -> 'TransactionOutput':
+        data = handle_transaction_data(data)
         public_key_hash = data['public_key_hash']
         amount = data['amount']
         return TransactionOutput(public_key_hash, amount)
@@ -85,7 +90,7 @@ class Transaction:
             transaction_input.unlocking_script = f"{signature} {owner.public_key_hex}"
 
     @staticmethod
-    def from_json(data: dict) -> 'Transaction':
+    def from_json(data: str | dict) -> 'Transaction':
         inputs = [TransactionInput.from_json(input_data) for input_data in data['inputs']]
         outputs = [TransactionOutput.from_json(output_data) for output_data in data['outputs']]
         return Transaction(inputs, outputs)
