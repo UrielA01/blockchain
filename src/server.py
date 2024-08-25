@@ -3,6 +3,8 @@ from uuid import uuid4
 
 from flask import Flask, request
 
+from src.core.transactions.transaction import Transaction
+from src.core.transactions.transaction_validation import TransactionException
 from src.network.node import ReceiveNode
 from src.wallet.initialize_blockchain import initialize_blockchain
 
@@ -18,12 +20,9 @@ blockchain = initialize_blockchain()
 def validate_transaction():
     content = request.json
     try:
-        node = ReceiveNode(blockchain)
-        node.receive(transaction=content)
-        node.validate_transaction()
-        node.validate_funds()
-        node.broadcast()
-    except Exception as transaction_exception:
+        transaction = Transaction.from_json(content)
+        transaction.validate_self(blockchain=blockchain)
+    except TransactionException as transaction_exception:
         return f'{transaction_exception}', 400
     return "Transaction success", 200
 
