@@ -1,5 +1,4 @@
-from src.core.blocks import BlockHeader, Block
-from src.core.blockchain import Blockchain
+from src.core.blocks.block import BlockHeader, Block
 from src.core.transactions.transaction_validation import TransactionValidation, TransactionException
 from src.utils.consts import NUMBER_OF_LEADING_ZEROS_IN_HASH
 
@@ -25,6 +24,7 @@ class ProofOfWork:
             nonce += 1
         return nonce
 
+from src.core.blockchain import Blockchain
 class BlockValidation:
     def __init__(self, blockchain: Blockchain, new_block: Block):
         self.blockchain = blockchain

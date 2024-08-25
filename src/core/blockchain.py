@@ -2,9 +2,8 @@ import json
 from dataclasses import dataclass, field
 from typing import List, Set
 
-from src.core.blocks import Block, BlockHeader
+from src.core.blocks.block import Block, BlockHeader
 from src.core.merkle_tree import MerkleTree
-from src.core.blocks.block_validation import ProofOfWork
 from src.core.transactions.transaction import Transaction
 from src.utils.io_mem_pool import get_transactions_from_memory
 
@@ -39,11 +38,13 @@ class Blockchain:
         return new_block
 
     def add_new_block(self, new_block: Block):
+        new_block.previous_block = self.last_block
         self.last_block = new_block
         self.length += 1
         return new_block
 
     def create_new_block(self):
+        from src.core.blocks.block_validation import ProofOfWork
         transactions = get_transactions_from_memory()
         merkle_tree = MerkleTree([json.dumps(tx).encode('utf-8') for tx in transactions])
         if transactions:

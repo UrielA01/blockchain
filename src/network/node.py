@@ -2,7 +2,7 @@ from typing import List
 
 import requests
 
-from src.core.blocks import Block
+from src.core.blocks.block import Block
 from src.core.transactions.transaction import Transaction
 from src.wallet.wallet import Wallet
 
