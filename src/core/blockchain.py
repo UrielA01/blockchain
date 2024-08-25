@@ -2,10 +2,9 @@ import json
 from dataclasses import dataclass, field
 from typing import List, Set
 
-from src.core.block import Block, BlockHeader
-from src.core.consensus import Consensus
+from src.core.blocks import Block, BlockHeader
 from src.core.merkle_tree import MerkleTree
-from src.core.new_block.block_validation import ProofOfWork
+from src.core.blocks.block_validation import ProofOfWork
 from src.core.transactions.transaction import Transaction
 from src.utils.io_mem_pool import get_transactions_from_memory
 
@@ -24,7 +23,6 @@ class Blockchain:
     length: int = 1
     current_transactions: List[Transaction] = field(default_factory=list)
     nodes: Set[str] = field(default_factory=set)
-    consensus: Consensus = field(default_factory=Consensus)
 
     def add_new_block_d(self, transaction: Transaction):
         new_block_header = BlockHeader(

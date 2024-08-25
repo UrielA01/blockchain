@@ -32,5 +32,19 @@ def validate_transaction():
         return f'{transaction_exception}', 400
     return "Transaction success", 200
 
+@app.route("/transaction", methods=['POST'])
+def validate_transaction():
+    content = request.json
+    try:
+        transaction = Transaction.from_json(content.get('transaction'))
+        validate = TransactionValidation(transaction=transaction, blockchain=blockchain)
+        validate.validate_scripts()
+        validate.validate_funds()
+        transaction.store()
+        send_node.broadcast_transaction(transaction)
+    except TransactionException as transaction_exception:
+        return f'{transaction_exception}', 400
+    return "Transaction success", 200
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

@@ -2,7 +2,7 @@ from typing import List
 
 import requests
 
-from src.core.block import Block
+from src.core.blocks import Block
 from src.core.transactions.transaction import Transaction
 from src.wallet.wallet import Wallet
 
@@ -34,8 +34,8 @@ class SendNode:
         transaction.sign_inputs(owner=self.wallet)
         self.broadcast(path, {"transaction": transaction.send_to_nodes()})
 
-    def broadcast_block(self, block: Block, path: str="/block"):
-        self.broadcast(path, {"block": block.to_dict})
+    def broadcast_block(self, block: Block, path: str="/blocks"):
+        self.broadcast(path, {"blocks": block.to_dict})
 
 
 class ReceiveNode:

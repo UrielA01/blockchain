@@ -1,4 +1,4 @@
-from src.core.block import BlockHeader, Block
+from src.core.blocks import BlockHeader, Block
 from src.core.blockchain import Blockchain
 from src.core.transactions.transaction_validation import TransactionValidation, TransactionException
 from src.utils.consts import NUMBER_OF_LEADING_ZEROS_IN_HASH
