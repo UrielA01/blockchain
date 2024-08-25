@@ -12,8 +12,9 @@ class Node:
 
 
 class MerkleTree:
-    def __init__(self):
+    def __init__(self, transactions_data: List[bytes]):
         self.root = None
+        self.transactions_data = transactions_data
 
     @staticmethod
     def compute_tree_depth(number_of_leaves: int) -> int:
@@ -49,23 +50,25 @@ class MerkleTree:
                 list_of_nodes.append(list_of_nodes[-1])
         return list_of_nodes
 
-    def build_merkle_tree(self, node_data: List[str]) -> Node:
-        old_set_of_nodes = [Node(calculate_sha256(data))
-                            for data in node_data]
-        old_set_of_nodes = self.fill_set(old_set_of_nodes)
-        tree_depth = self.compute_tree_depth(len(old_set_of_nodes))
+    def build_merkle_tree(self) -> Node:
+        old_nodes = [Node(calculate_sha256(data))
+                            for data in self.transactions_data]
+        old_nodes = self.fill_set(old_nodes)
+        tree_depth = self.compute_tree_depth(len(old_nodes))
 
-        new_set_of_nodes = []
+        new_nodes = []
         for i in range(0, tree_depth):
             num_nodes = 2**(tree_depth - i)
-            new_set_of_nodes = []
+            new_nodes = []
             for j in range(0, num_nodes, 2):
-                child_node_0 = old_set_of_nodes[j]
-                child_node_1 = old_set_of_nodes[j + 1]
+                child_node_0 = old_nodes[j]
+                child_node_1 = old_nodes[j + 1]
                 new_node = Node(value=calculate_sha256(
                     f'{child_node_0.value}{child_node_1.value}'),
                     left_child=child_node_0,
                     right_child=child_node_1)
-                new_set_of_nodes.append(new_node)
-            old_set_of_nodes = new_set_of_nodes
-        return new_set_of_nodes[0]
+                new_nodes.append(new_node)
+            old_nodes = new_nodes
+        root = new_nodes[0]
+        self.root = root
+        return root
