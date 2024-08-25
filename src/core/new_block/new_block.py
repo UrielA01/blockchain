@@ -1,11 +1,9 @@
 from src.core.block import BlockHeader
-from src.core.blockchain import Blockchain
 from src.utils.consts import NUMBER_OF_LEADING_ZEROS_IN_HASH
 
 
 class NewBlock:
-    def __init__(self, blockchain: Blockchain):
-        self.blockchain = blockchain
+    def __init__(self):
         self.new_block = None
 
     @staticmethod

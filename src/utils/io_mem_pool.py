@@ -13,7 +13,3 @@ def get_transactions_from_memory() -> List[dict]:
         current_mem_pool_str = file_obj.read()
         current_mem_pool_list = json.loads(current_mem_pool_str)
     return current_mem_pool_list
-
-store_transactions_in_memory([{"transaction": "bla"}, {"transaction": "bla"}, {"transaction": "bla"}])
-print(get_transactions_from_memory())
-print(type(get_transactions_from_memory()))
