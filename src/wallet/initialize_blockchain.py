@@ -1,6 +1,3 @@
-import time
-
-from src.core.block import Block
 from src.core.blockchain import Blockchain
 from src.core.transaction import TransactionInput, TransactionOutput, Transaction
 from src.wallet.wallet import Wallet

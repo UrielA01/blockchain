@@ -1,12 +1,8 @@
 import sys
-import timeit
-from dataclasses import asdict
 from uuid import uuid4
 
-from flask import Flask, jsonify, request
+from flask import Flask, request
 
-from src.core.block import Block
-from src.core.transaction import Transaction
 from src.network.node import ReceiveNode
 from src.wallet.initialize_blockchain import initialize_blockchain
 

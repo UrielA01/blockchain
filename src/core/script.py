@@ -1,8 +1,3 @@
-import binascii
-import json
-
-from Crypto.PublicKey import RSA
-
 from src.utils.crypto_utils import calculate_sha256, calculate_ripemd160
 from src.wallet.wallet import Wallet
 

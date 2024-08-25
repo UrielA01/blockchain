@@ -64,7 +64,7 @@ class Transaction:
         return signature
 
     def sign_inputs(self, owner: Wallet):
-        signature = self.sign_transaction_data()
+        signature = self.sign_transaction_data(owner)
         for transaction_input in self.inputs:
             transaction_input.unlocking_script = f"{signature} {owner.public_key_hex}"
 
