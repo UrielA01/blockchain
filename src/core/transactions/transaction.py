@@ -1,7 +1,10 @@
 import json
 from typing import List
 
+from src.core.blockchain import Blockchain
+from src.core.transactions.transaction_validation import TransactionValidation
 from src.utils.crypto_utils import calculate_sha256
+from src.utils.io_mem_pool import get_transactions_from_memory, store_transactions_in_memory
 from src.wallet.wallet import Wallet
 
 
@@ -88,6 +91,15 @@ class Transaction:
         inputs = [TransactionInput.from_json(input_data) for input_data in data['inputs']]
         outputs = [TransactionOutput.from_json(output_data) for output_data in data['outputs']]
         return Transaction(inputs, outputs)
+
+    def validate_self(self, blockchain: Blockchain):
+        validate = TransactionValidation(transaction=self, blockchain=blockchain)
+        return validate.validate()
+
+    def store(self):
+        current_transactions = get_transactions_from_memory()
+        current_transactions.append(self.to_dict)
+        store_transactions_in_memory(current_transactions)
 
     def send_to_nodes(self) -> dict:
         return {

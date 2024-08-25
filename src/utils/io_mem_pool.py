@@ -2,10 +2,6 @@ import json
 import os
 from typing import List
 
-from src.core.transaction import Transaction
-
-
-
 __file__ = os.path.abspath('../doc/mem_pool.json')
 def store_transactions_in_memory(transactions: List[dict]):
     text = json.dumps(transactions, indent=4)

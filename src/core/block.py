@@ -45,6 +45,11 @@ class Block:
     transactions: List[Transaction]
     previous_block: 'Block' = None
 
+    def find_transaction_by_hash(self, tx_hash) -> Transaction:
+        for transaction in self.transactions:
+            if transaction.hash == tx_hash:
+                return transaction
+
     def __eq__(self, other: 'Block') -> bool:
         try:
             assert self.header == other.header
