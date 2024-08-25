@@ -3,7 +3,7 @@ import time
 from dataclasses import dataclass, field
 from typing import List
 
-from src.core.transaction import Transaction
+from src.core.transactions.transaction import Transaction
 from src.utils.crypto_utils import calculate_sha256
 
 @dataclass

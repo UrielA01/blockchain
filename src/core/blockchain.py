@@ -6,7 +6,7 @@ from src.core.block import Block, BlockHeader
 from src.core.consensus import Consensus
 from src.core.merkle_tree import MerkleTree
 from src.core.new_block.new_block import NewBlock
-from src.core.transaction import Transaction
+from src.core.transactions.transaction import Transaction
 from src.utils.io_mem_pool import get_transactions_from_memory
 
 class BlockchainException(Exception):

@@ -1,5 +1,5 @@
 from src.core.blockchain import Blockchain
-from src.core.transaction import TransactionInput, TransactionOutput, Transaction
+from src.core.transactions.transaction import TransactionInput, TransactionOutput, Transaction
 from src.wallet.wallet import Wallet
 from src.users.albert import private_key as albert_private_key
 from src.users.bertrand import private_key as bertrand_private_key

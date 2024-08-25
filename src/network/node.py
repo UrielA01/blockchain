@@ -1,11 +1,8 @@
-import json
 from typing import List
 
 import requests
 
-from src.core.blockchain import Blockchain
-from src.core.script import StackScript
-from src.core.transaction import Transaction, TransactionInput, TransactionOutput
+from src.core.transactions.transaction import Transaction
 from src.wallet.wallet import Wallet
 
 
