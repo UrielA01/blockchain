@@ -31,7 +31,8 @@ class StackScript(Stack):
     def op_equalverify(self):
         last_element = self.pop()
         second_last_element = self.pop()
-        assert last_element == second_last_element
+        if not last_element == second_last_element:
+            raise ValueError("Invalid hash")
 
     def op_checksig(self):
         public_key = self.pop()

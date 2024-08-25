@@ -94,7 +94,12 @@ class Transaction:
     def validate_self(self, blockchain: Blockchain):
         from src.core.transactions.transaction_validation import TransactionValidation
         validate = TransactionValidation(transaction=self, blockchain=blockchain)
-        return validate.validate_scripts() and validate.validate_funds()
+        from src.core.transactions.transaction_validation import TransactionException
+        try:
+            validate.validate_scripts()
+            validate.validate_funds()
+        except TransactionException as e:
+            print(e.message)
 
     def store(self):
         current_transactions = get_transactions_from_memory()
