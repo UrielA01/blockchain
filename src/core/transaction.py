@@ -24,10 +24,18 @@ class TransactionInput:
                 "output_index": self.output_index
             })
 
+    @staticmethod
+    def from_json(data: dict) -> 'TransactionInput':
+        transaction_hash = data['transaction_hash']
+        output_index = data['output_index']
+        unlocking_script = data['unlocking_script']
+        return TransactionInput(transaction_hash, output_index, unlocking_script)
+
 
 class TransactionOutput:
     def __init__(self, public_key_hash: bytes, amount: int):
         self.amount = amount
+        self.public_key_hash = public_key_hash
         self.locking_script = (
             f"OP_DUP OP_HASH160 {public_key_hash} OP_EQUAL_VERIFY OP_CHECKSIG"
         )
@@ -35,8 +43,15 @@ class TransactionOutput:
     def to_json(self) -> str:
         return json.dumps({
             "amount": self.amount,
+            "public_key_hash": self.public_key_hash,
             "locking_script": self.locking_script
         })
+
+    @staticmethod
+    def from_json(data: dict) -> 'TransactionOutput':
+        public_key_hash = data['public_key_hash']
+        amount = data['amount']
+        return TransactionOutput(public_key_hash, amount)
 
 
 class Transaction:
@@ -67,6 +82,12 @@ class Transaction:
         signature = self.sign_transaction_data(owner)
         for transaction_input in self.inputs:
             transaction_input.unlocking_script = f"{signature} {owner.public_key_hex}"
+
+    @staticmethod
+    def from_json(data: dict) -> 'Transaction':
+        inputs = [TransactionInput.from_json(input_data) for input_data in data['inputs']]
+        outputs = [TransactionOutput.from_json(output_data) for output_data in data['outputs']]
+        return Transaction(inputs, outputs)
 
     def send_to_nodes(self) -> dict:
         return {
