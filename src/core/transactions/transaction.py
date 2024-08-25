@@ -68,6 +68,13 @@ class Transaction:
     @property
     def to_dict(self):
         return {
+            "inputs": [tx_input.to_json() for tx_input in self.inputs],
+            "outputs": [tx_output.to_json() for tx_output in self.outputs],
+        }
+
+    @property
+    def to_dict_no_script(self):
+        return {
             "inputs": [tx_input.to_json(with_unlocking_script=False) for tx_input in self.inputs],
             "outputs": [tx_output.to_json() for tx_output in self.outputs],
         }
@@ -75,11 +82,11 @@ class Transaction:
     @property
     def hash(self):
         transaction_bytes = json.dumps(
-            self.to_dict, indent=2).encode('utf-8')
+            self.to_dict_no_script, indent=2).encode('utf-8')
         return calculate_sha256(transaction_bytes)
 
     def sign_transaction_data(self, owner: Wallet):
-        transaction_bytes = json.dumps(self.to_dict).encode('utf-8')
+        transaction_bytes = json.dumps(self.to_dict_no_script).encode('utf-8')
         signature = Wallet.convert_signature_to_str(
             owner.sign(transaction_bytes))
         return signature

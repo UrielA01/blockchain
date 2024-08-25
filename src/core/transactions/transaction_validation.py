@@ -53,7 +53,7 @@ class TransactionValidation:
                     tx_input.transaction_hash, tx_input.output_index)
                 unlocking_script = tx_input.unlocking_script
                 transaction_bytes = json.dumps(
-                self.transaction.to_dict, indent=2).encode('utf-8')
+                self.transaction.to_dict_no_script, indent=2).encode('utf-8')
                 stack_script = StackScript(transaction_bytes)
                 stack_script.execute(unlocking_script)
                 stack_script.execute(locking_script)

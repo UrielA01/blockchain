@@ -15,8 +15,8 @@ class BlockHeader:
     timestamp: float = field(default_factory=lambda: time.time())
 
     @property
-    def hash(self) -> str:
-        block_as_dict = {
+    def to_dict(self) -> dict:
+        return {
             'index': self.index,
             'merkle_root': self.merkle_root,
             'previous_hash': self.previous_hash,
@@ -24,7 +24,9 @@ class BlockHeader:
             'timestamp': self.timestamp,
         }
 
-        block_string = json.dumps(block_as_dict, sort_keys=True).encode()
+    @property
+    def hash(self) -> str:
+        block_string = json.dumps(self.to_dict, sort_keys=True).encode()
         return calculate_sha256(block_string)
 
     def __eq__(self, other: 'BlockHeader') -> bool:
@@ -49,6 +51,13 @@ class Block:
         for transaction in self.transactions:
             if transaction.hash == tx_hash:
                 return transaction
+
+    @property
+    def to_dict(self) -> dict:
+        return {
+            'header': self.header.to_dict,
+            'transactions': [tx.to_dict for tx in self.transactions],
+        }
 
     def __eq__(self, other: 'Block') -> bool:
         try:
