@@ -24,6 +24,10 @@ class BlockHeader:
             'timestamp': self.timestamp,
         }
 
+    @staticmethod
+    def from_json(block_header: dict) -> 'BlockHeader':
+        return BlockHeader(block_header['index'], block_header['previous_hash'], block_header['merkle_root'], block_header['nonce'], block_header['timestamp'])
+
     @property
     def hash(self) -> str:
         block_string = json.dumps(self.to_dict, sort_keys=True).encode()
@@ -58,6 +62,15 @@ class Block:
             'header': self.header.to_dict,
             'transactions': [tx.to_dict for tx in self.transactions],
         }
+
+    @staticmethod
+    def from_json(block: dict) -> 'Block':
+        """
+            previous block is add when the block is added to blockchain
+        """
+        header = BlockHeader.from_json(block['header'])
+        transactions = [Transaction.from_json(transaction) for transaction in block['transactions']]
+        return Block(header, transactions)
 
     def __eq__(self, other: 'Block') -> bool:
         try:
