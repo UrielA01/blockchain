@@ -1,6 +1,7 @@
 import json
 import time
 from dataclasses import dataclass, field
+from typing import List
 
 from src.core.transaction import Transaction
 from src.utils.crypto_utils import calculate_sha256
@@ -41,7 +42,7 @@ class BlockHeader:
 @dataclass
 class Block:
     header: BlockHeader
-    transactions: Transaction
+    transactions: List[Transaction]
     previous_block: 'Block' = None
 
     def __eq__(self, other: 'Block') -> bool:
