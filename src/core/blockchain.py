@@ -5,7 +5,7 @@ from typing import List, Set
 from src.core.block import Block, BlockHeader
 from src.core.consensus import Consensus
 from src.core.merkle_tree import MerkleTree
-from src.core.new_block.new_block import NewBlock
+from src.core.new_block.block_validation import ProofOfWork
 from src.core.transactions.transaction import Transaction
 from src.utils.io_mem_pool import get_transactions_from_memory
 
@@ -26,7 +26,7 @@ class Blockchain:
     nodes: Set[str] = field(default_factory=set)
     consensus: Consensus = field(default_factory=Consensus)
 
-    def add_new_block(self, transaction: Transaction):
+    def add_new_block_d(self, transaction: Transaction):
         new_block_header = BlockHeader(
             index=self.length + 1,
             previous_hash=self.last_block.header.hash
@@ -40,6 +40,11 @@ class Blockchain:
         self.length += 1
         return new_block
 
+    def add_new_block(self, new_block: Block):
+        self.last_block = new_block
+        self.length += 1
+        return new_block
+
     def create_new_block(self):
         transactions = get_transactions_from_memory()
         merkle_tree = MerkleTree([json.dumps(tx).encode('utf-8') for tx in transactions])
@@ -49,7 +54,7 @@ class Blockchain:
                 merkle_root=merkle_tree.root,
                 previous_hash= self.last_block.header.hash,
             )
-            block_header.nonce = NewBlock.set_nonce(block_header)
+            block_header.nonce = ProofOfWork.find_nonce(block_header)
             transactions_list = [Transaction.from_json(transaction) for transaction in transactions]
             new_block = Block(transactions=transactions_list, header=block_header)
             self.last_block = new_block
