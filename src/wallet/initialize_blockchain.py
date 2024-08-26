@@ -11,8 +11,8 @@ bertrand_wallet = Wallet(private_key=bertrand_private_key)
 camille_wallet = Wallet(private_key=camille_private_key)
 
 
-def initialize_blockchain() -> Blockchain:
-    blockchain = Blockchain()
+def initialize_blockchain(my_wallet: Wallet) -> Blockchain:
+    blockchain = Blockchain(wallet=my_wallet)
 
     input_0 = TransactionInput(transaction_hash="abcd1234",
                                output_index=0)

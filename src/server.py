@@ -15,9 +15,10 @@ app.json.sort_keys = False
 
 node_identifier = str(uuid4()).replace("-", "")
 
-blockchain = initialize_blockchain()
-
 my_wallet = Wallet()
+
+blockchain = initialize_blockchain(my_wallet=my_wallet)
+
 send_node = SendNode(wallet=my_wallet)
 
 @app.route("/transaction", methods=['POST'])

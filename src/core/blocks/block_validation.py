@@ -1,6 +1,9 @@
 from src.core.blocks.block import BlockHeader, Block
+from src.core.transactions.transaction import Transaction, TransactionOutput
 from src.core.transactions.transaction_validation import TransactionValidation, TransactionException
-from src.utils.consts import NUMBER_OF_LEADING_ZEROS_IN_HASH
+from src.utils.consts import NUMBER_OF_LEADING_ZEROS_IN_HASH, MINER_REWARD
+from src.wallet.wallet import Wallet
+
 
 class BlockValidationException(Exception):
     def __init__(self, expression, message):
@@ -23,6 +26,12 @@ class ProofOfWork:
         while not ProofOfWork.is_valid_nonce(block_header):
             nonce += 1
         return nonce
+
+    @staticmethod
+    def get_coin_base_transaction(transaction_fees: float, miner_wallet: Wallet) -> Transaction:
+        transaction_output = TransactionOutput(amount=transaction_fees + MINER_REWARD, public_key_hash=miner_wallet.public_key_hash)
+        return Transaction(inputs=[], outputs=[transaction_output])
+
 
 from src.core.blockchain import Blockchain
 class BlockValidation:

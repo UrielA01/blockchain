@@ -14,22 +14,14 @@ class TransactionValidation:
         self.blockchain = blockchain
         self.transaction = transaction
 
-    def get_transaction_from_utxo(self, tx_hash: str) -> Transaction:
-        current_block = self.blockchain.last_block
-        while current_block:
-            found_transaction = current_block.find_transaction_by_hash(tx_hash)
-            if found_transaction:
-                return found_transaction
-            current_block = current_block.previous_block
-
     def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):
-        transaction = self.get_transaction_from_utxo(utxo_hash)
+        transaction = self.blockchain.get_transaction_from_utxo(utxo_hash)
         return transaction.outputs[utxo_index].locking_script
 
     def get_total_amount_in_inputs(self) -> int:
         total_in = 0
         for tx_input in self.transaction.inputs:
-            transaction = self.get_transaction_from_utxo(
+            transaction = self.blockchain.get_transaction_from_utxo(
                 tx_input.transaction_hash)
             utxo_amount = transaction.outputs[tx_input.output_index].amount
             total_in = total_in + utxo_amount
