@@ -24,12 +24,13 @@ send_node = SendNode(wallet=my_wallet)
 def validate_transaction():
     content = request.json
     try:
-        transaction = Transaction.from_json(content.get('transaction'))
-        validate = TransactionValidation(transaction=transaction, blockchain=blockchain)
-        validate.validate_scripts()
-        validate.validate_funds()
-        transaction.store()
-        send_node.broadcast_transaction(transaction)
+        if content.get('transaction'):
+            transaction = Transaction.from_json(content.get('transaction'))
+            validate = TransactionValidation(transaction=transaction, blockchain=blockchain)
+            validate.validate_scripts()
+            validate.validate_funds()
+            transaction.store()
+            send_node.broadcast_transaction(transaction)
     except TransactionException as transaction_exception:
         return f'{transaction_exception}', 400
     return "Transaction success", 200
@@ -38,13 +39,14 @@ def validate_transaction():
 def validate_block():
     content = request.json
     try:
-        new_block = Block.from_json(content.get('block'))
-        validate = BlockValidation(new_block=new_block, blockchain=blockchain)
-        validate.is_valid_prev_block()
-        validate.is_valid_hash()
-        validate.is_valid_transactions()
-        blockchain.add_new_block(new_block=new_block)
-        send_node.broadcast_block(new_block)
+        if content.get('block'):
+            new_block = Block.from_json(content.get('block'))
+            validate = BlockValidation(new_block=new_block, blockchain=blockchain)
+            validate.validate_prev_block()
+            validate.validate_hash()
+            validate.validate_transactions()
+            blockchain.add_new_block(new_block=new_block)
+            send_node.broadcast_block(new_block)
     except BlockValidationException as e:
         return f'{e}', 400
     return "New block added", 200

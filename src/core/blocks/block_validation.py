@@ -30,15 +30,15 @@ class BlockValidation:
         self.blockchain = blockchain
         self.new_block = new_block
 
-    def is_valid_prev_block(self):
+    def validate_prev_block(self):
         if not self.blockchain.last_block.header.hash == self.new_block.header.previous_hash:
             raise BlockValidationException("", "Invalid previous hash")
 
-    def is_valid_hash(self):
+    def validate_hash(self):
         if not ProofOfWork.is_valid_nonce(self.new_block.header):
             raise BlockValidationException("", "Invalid hash")
 
-    def is_valid_transactions(self):
+    def validate_transactions(self):
         try:
             for tx in self.new_block.transactions:
                 validate = TransactionValidation(transaction=tx, blockchain=self.blockchain)
