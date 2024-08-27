@@ -1,3 +1,4 @@
+import copy
 import json
 from dataclasses import dataclass, field
 from typing import List, Set
@@ -5,7 +6,7 @@ from typing import List, Set
 from src.core.blocks.block import Block, BlockHeader
 from src.core.merkle_tree import MerkleTree
 from src.core.transactions.transaction import Transaction
-from src.utils.io_mem_pool import get_transactions_from_memory
+from src.utils.io_mem_pool import get_transactions_from_memory, reset_transaction_memory
 from src.wallet.wallet import Wallet
 
 
@@ -51,7 +52,7 @@ class Blockchain:
         while current_block:
             found_transaction = current_block.find_transaction_by_hash(tx_hash)
             if found_transaction:
-                return found_transaction
+                return copy.deepcopy(found_transaction)
             current_block = current_block.previous_block
 
     def get_transaction_fees(self, transactions: List[Transaction]) -> float:
@@ -69,23 +70,35 @@ class Blockchain:
             transaction_fees = transaction_fees + (input_amount-output_amount)
         return transaction_fees
 
-    def create_new_block(self):
+    def create_new_block(self, transactions: List[Transaction] = None):
         from src.core.blocks.block_validation import ProofOfWork
-        transactions = get_transactions_from_memory()
-        if transactions:
+        if transactions is None:
+            transactions = get_transactions_from_memory()
             transactions = [Transaction.from_json(transaction) for transaction in transactions]
+        if not transactions is None:
+            from src.core.transactions.transaction_validation import TransactionValidation
+            for transaction in transactions:
+                validate = TransactionValidation(transaction=transaction, blockchain=self)
+                validate.validate()
             transaction_fees = self.get_transaction_fees(transactions)
             coinbase_transaction = ProofOfWork.get_coin_base_transaction(transaction_fees, miner_wallet=self.wallet)
             transactions.append(coinbase_transaction)
             merkle_tree = MerkleTree([json.dumps(tx.to_dict_no_script).encode('utf-8') for tx in transactions])
             block_header = BlockHeader(
                 index=self.length + 1,
-                merkle_root=merkle_tree.root,
+                merkle_root=merkle_tree.root.value,
                 previous_hash=self.last_block.header.hash,
+                nonce=0
             )
-            block_header.nonce = ProofOfWork.find_nonce(block_header)
+            nonce = ProofOfWork.find_nonce(block_header)
+            block_header.nonce = nonce
             new_block = Block(transactions=transactions, header=block_header)
-            self.last_block = new_block
-            self.length += 1
+            from src.core.blocks.block_validation import BlockValidation
+            validate = BlockValidation(new_block=new_block, blockchain=self)
+            validate.validate_prev_block()
+            validate.validate_hash()
+            validate.validate_transactions()
+            self.add_new_block(new_block)
+            reset_transaction_memory()
         else:
             raise BlockchainException("", "No transaction in mem_pool.json")

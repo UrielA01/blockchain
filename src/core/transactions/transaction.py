@@ -15,6 +15,14 @@ class TransactionInput:
         self.output_index = output_index
         self.unlocking_script = unlocking_script
 
+    def __eq__(self, other: 'TransactionInput'):
+        return (
+            self.transaction_hash == other.transaction_hash
+            and self.output_index == other.output_index
+            and self.unlocking_script == other.unlocking_script
+        )
+
+
     def to_json(self, with_unlocking_script: bool = True) -> str:
         if with_unlocking_script:
             return json.dumps({
@@ -42,7 +50,14 @@ class TransactionOutput:
         self.amount = amount
         self.public_key_hash = public_key_hash
         self.locking_script = (
-            f"OP_DUP OP_HASH160 {public_key_hash} OP_EQUAL_VERIFY OP_CHECKSIG"
+            f"OP_DUP OP_HASH160 {public_key_hash} OP_EQUALVERIFY OP_CHECKSIG"
+        )
+
+    def __eq__(self, other: 'TransactionOutput'):
+        return (
+            self.amount == other.amount
+            and self.public_key_hash == other.public_key_hash
+            and self.locking_script == other.locking_script
         )
 
     def to_json(self) -> str:
@@ -65,6 +80,12 @@ class Transaction:
         self.inputs = inputs
         self.outputs = outputs
 
+    def __eq__(self, other: 'Transaction'):
+        return (
+            self.inputs == other.inputs
+            and self.outputs == other.outputs
+        )
+
     @property
     def to_dict(self):
         return {
@@ -86,7 +107,7 @@ class Transaction:
         return calculate_sha256(transaction_bytes)
 
     def sign_transaction_data(self, owner: Wallet):
-        transaction_bytes = json.dumps(self.to_dict_no_script).encode('utf-8')
+        transaction_bytes = json.dumps(self.to_dict_no_script, indent=2).encode('utf-8')
         signature = Wallet.convert_signature_to_str(
             owner.sign(transaction_bytes))
         return signature

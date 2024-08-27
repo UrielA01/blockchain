@@ -15,14 +15,11 @@ class Wallet:
         else:
             self.private_key = RSA.generate(2048)
         self.public_key = self.private_key.publickey().export_key()
+        self.public_key_hex = binascii.hexlify(self.public_key).decode("utf-8")
 
-        first_key_hash = calculate_sha256(self.public_key)
+        first_key_hash = calculate_sha256(self.public_key_hex)
         self.public_key_hash = calculate_ripemd160(first_key_hash)
         self.address = base58.b58encode(self.public_key_hash)
-
-    @property
-    def public_key_hex(self):
-        return binascii.hexlify(self.public_key).decode("utf-8")
 
     def sign(self, transaction: bytes) -> bytes:
         """
@@ -57,9 +54,9 @@ class Wallet:
         hash_obj = SHA256.new(message)
 
         try:
+            imported_key = RSA.import_key(binascii.unhexlify(public_key))
             # Verify the signature
-            pkcs1_15.new(RSA.import_key(public_key)
-                         ).verify(hash_obj, signature)
+            pkcs1_15.new(imported_key).verify(hash_obj, signature)
             return True
         except (ValueError, TypeError):
             return False

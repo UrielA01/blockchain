@@ -34,15 +34,13 @@ class BlockHeader:
         return calculate_sha256(block_string)
 
     def __eq__(self, other: 'BlockHeader') -> bool:
-        try:
-            assert self.previous_hash == other.previous_hash
-            assert self.merkle_root == other.merkle_root
-            assert self.timestamp == other.timestamp
-            assert self.nonce == other.nonce
-            assert self.hash == other.hash
-            return True
-        except AssertionError:
-            return False
+        return (
+            self.previous_hash == other.previous_hash and
+            self.merkle_root == other.merkle_root and
+            self.timestamp == other.timestamp and
+            self.nonce == other.nonce and
+            self.hash == other.hash
+        )
 
 
 @dataclass
@@ -59,8 +57,8 @@ class Block:
     @property
     def to_dict(self) -> dict:
         return {
-            'header': self.header.to_dict,
-            'transactions': [tx.to_dict for tx in self.transactions],
+            'header': {**self.header.to_dict, 'hash': self.header.hash},
+            'transactions': [{**tx.to_dict, "hash": tx.hash} for tx in self.transactions],
         }
 
     @staticmethod
@@ -73,9 +71,7 @@ class Block:
         return Block(header, transactions)
 
     def __eq__(self, other: 'Block') -> bool:
-        try:
-            assert self.header == other.header
-            assert self.transactions == other.transactions
-            return True
-        except AssertionError:
-            return False
+        return (
+            self.header == other.header and
+            self.transactions == other.transactions
+        )

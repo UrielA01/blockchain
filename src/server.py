@@ -28,8 +28,7 @@ def validate_transaction():
         if content.get('transaction'):
             transaction = Transaction.from_json(content.get('transaction'))
             validate = TransactionValidation(transaction=transaction, blockchain=blockchain)
-            validate.validate_scripts()
-            validate.validate_funds()
+            validate.validate()
             transaction.store()
             send_node.broadcast_transaction(transaction)
     except TransactionException as transaction_exception:
@@ -51,6 +50,15 @@ def validate_block():
     except BlockValidationException as e:
         return f'{e}', 400
     return "New block added", 200
+
+@app.route("/chain", methods=['GET'])
+def display_chain():
+    data = []
+    current_block = blockchain.last_block
+    while current_block:
+        data.append(current_block.to_dict)
+        current_block = current_block.previous_block
+    return data
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

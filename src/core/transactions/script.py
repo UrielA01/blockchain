@@ -1,6 +1,7 @@
 from src.utils.crypto_utils import calculate_sha256, calculate_ripemd160
 from src.wallet.wallet import Wallet
 
+import binascii
 
 class Stack:
     def __init__(self):
@@ -63,7 +64,7 @@ class StackScript(Stack):
         public_key = self.pop()
         signature = self.pop()
         public_key_bytes = public_key.encode("utf-8")
-        if not Wallet.valid_signature(signature, public_key_bytes, self.transaction_bytes):
+        if not Wallet.valid_signature(binascii.unhexlify(signature), public_key_bytes, self.transaction_bytes):
             raise ValueError("Invalid signature")
 
 
@@ -74,6 +75,7 @@ class StackScript(Stack):
             Iterates over each element in the script string. If the element is an operation (starting with 'OP'),
             it dynamically calls the corresponding method in the StackScript class. Otherwise, it pushes the element onto the stack.
         """
+        script = script.split(" ")
         for element in script:
             if element.startswith("OP"):
                 class_method = getattr(StackScript, element.lower())

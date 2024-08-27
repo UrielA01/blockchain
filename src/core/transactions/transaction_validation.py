@@ -14,6 +14,7 @@ class TransactionValidation:
         self.blockchain = blockchain
         self.transaction = transaction
 
+
     def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):
         transaction = self.blockchain.get_transaction_from_utxo(utxo_hash)
         return transaction.outputs[utxo_index].locking_script
@@ -50,4 +51,9 @@ class TransactionValidation:
                 stack_script.execute(unlocking_script)
                 stack_script.execute(locking_script)
         except ValueError as e:
-            raise TransactionException(expression="", message="Invalid transaction inputs")
+            print(e)
+            raise TransactionException(expression="", message=f'Invalid transaction inputs - {e}')
+
+    def validate(self):
+        # self.validate_funds()
+        self.validate_scripts()

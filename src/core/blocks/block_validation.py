@@ -1,3 +1,5 @@
+import copy
+
 from src.core.blocks.block import BlockHeader, Block
 from src.core.transactions.transaction import Transaction, TransactionOutput
 from src.core.transactions.transaction_validation import TransactionValidation, TransactionException
@@ -22,9 +24,11 @@ class ProofOfWork:
 
     @staticmethod
     def find_nonce(block_header: BlockHeader):
-        nonce = block_header.nonce
-        while not ProofOfWork.is_valid_nonce(block_header):
+        header_copy = copy.deepcopy(block_header)
+        nonce = header_copy.nonce
+        while not ProofOfWork.is_valid_nonce(header_copy):
             nonce += 1
+            header_copy.nonce = nonce
         return nonce
 
     @staticmethod
@@ -51,8 +55,7 @@ class BlockValidation:
         try:
             for tx in self.new_block.transactions:
                 validate = TransactionValidation(transaction=tx, blockchain=self.blockchain)
-                validate.validate_scripts()
-                validate.validate_funds()
+                validate.validate()
         except TransactionException:
             raise BlockValidationException("", "Invalid transactions")
 
