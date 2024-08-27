@@ -7,6 +7,7 @@ from src.core.blocks.block_validation import BlockValidation, BlockValidationExc
 from src.core.transactions.transaction import Transaction
 from src.core.transactions.transaction_validation import TransactionException, TransactionValidation
 from src.network.node import SendNode
+from src.utils.io_mem_pool import store_transactions_in_memory
 from src.wallet.initialize_blockchain import initialize_blockchain
 from src.wallet.wallet import Wallet
 
@@ -29,7 +30,7 @@ def validate_transaction():
             transaction = Transaction.from_json(content.get('transaction'))
             validate = TransactionValidation(transaction=transaction, blockchain=blockchain)
             validate.validate()
-            transaction.store()
+            store_transactions_in_memory([transaction.to_dict])
             send_node.broadcast_transaction(transaction)
     except TransactionException as transaction_exception:
         return f'{transaction_exception}', 400

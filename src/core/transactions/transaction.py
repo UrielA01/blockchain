@@ -123,11 +123,6 @@ class Transaction:
         outputs = [TransactionOutput.from_json(output_data) for output_data in data['outputs']]
         return Transaction(inputs, outputs)
 
-    def store(self):
-        current_transactions = get_transactions_from_memory()
-        current_transactions.append(self.to_dict)
-        store_transactions_in_memory(current_transactions)
-
     def send_to_nodes(self) -> dict:
         return {
             "inputs": [i.to_json() for i in self.inputs],

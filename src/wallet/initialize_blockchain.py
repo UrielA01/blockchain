@@ -63,7 +63,7 @@ def initialize_blockchain(my_wallet: Wallet) -> Blockchain:
 
     input_0 = TransactionInput(transaction_hash=blockchain.last_block.transactions[0].hash,
                                output_index=0)
-    output_0 = TransactionOutput(public_key_hash=bertrand_wallet.public_key_hash,
+    output_0 = TransactionOutput(public_key_hash=my_wallet.public_key_hash,
                                  amount=3)
     output_1 = TransactionOutput(public_key_hash=albert_wallet.public_key_hash,
                                  amount=3)
@@ -76,6 +76,5 @@ def initialize_blockchain(my_wallet: Wallet) -> Blockchain:
         blockchain.create_new_block()
     except (TransactionException, BlockValidationException) as e:
         print(f'error {e}')
-
 
     return blockchain
