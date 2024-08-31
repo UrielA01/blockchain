@@ -42,7 +42,8 @@ def initialize_blockchain(my_wallet: Wallet, network: Network) -> Blockchain:
             store_transactions_in_memory([transaction.to_dict])
             blockchain.create_new_block()
         except (TransactionException, BlockValidationException) as e:
-            print(f'error {e}')
+            print(e)
+            raise TransactionException("", "Invalid transaction")
 
         # Uncomment to test transactions from mempool
         # input_0 = TransactionInput(transaction_hash=blockchain.last_block.transactions[0].hash,

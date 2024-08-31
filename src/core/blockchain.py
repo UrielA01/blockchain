@@ -1,7 +1,7 @@
 import copy
 import json
 from dataclasses import dataclass, field
-from typing import List, Set
+from typing import List
 
 from src.core.blocks.block import Block, BlockHeader
 from src.core.merkle_tree import MerkleTree
@@ -73,10 +73,14 @@ class Blockchain:
             transactions = get_transactions_from_memory()
             transactions = [Transaction.from_json(transaction) for transaction in transactions]
         if not (transactions is None):
-            from src.core.transactions.transaction_validation import TransactionValidation
-            for transaction in transactions:
-                validate = TransactionValidation(transaction=transaction, blockchain=self)
-                validate.validate()
+            from src.core.transactions.transaction_validation import TransactionValidation, TransactionException
+            try:
+                for transaction in transactions:
+                    validate = TransactionValidation(transaction=transaction, blockchain=self)
+                    validate.validate()
+            except TransactionException as e:
+                print(e)
+                raise BlockchainException("", "Invalid transactions")
             transaction_fees = self.get_transaction_fees(transactions)
             coinbase_transaction = ProofOfWork.get_coin_base_transaction(transaction_fees, miner_wallet=self.wallet)
             transactions.append(coinbase_transaction)

@@ -40,7 +40,7 @@ class TransactionValidation:
         return total_out
 
     def validate_funds(self):
-        if not self.get_total_amount_in_inputs() == self.get_total_amount_in_outputs():
+        if not self.get_total_amount_in_inputs() >= self.get_total_amount_in_outputs():
             raise TransactionException(expression="",message="Invalid transaction funds")
 
     def validate_scripts(self):
@@ -59,5 +59,5 @@ class TransactionValidation:
             raise TransactionException(expression="", message=f'Invalid transaction inputs - {e}')
 
     def validate(self):
-        # self.validate_funds()
+        self.validate_funds()
         self.validate_scripts()
