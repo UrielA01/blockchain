@@ -4,6 +4,9 @@ from src.core.transactions.transaction import Transaction
 
 import json
 
+from src.utils.consts import MINER_REWARD
+
+
 class TransactionException(Exception):
     def __init__(self, expression, message):
         self.expression = expression
@@ -15,7 +18,6 @@ class TransactionValidation:
     def __init__(self, blockchain: Blockchain, transaction: Transaction):
         self.blockchain = blockchain
         self.transaction = transaction
-
 
     def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):
         transaction = self.blockchain.get_transaction_from_utxo(utxo_hash)
@@ -40,8 +42,16 @@ class TransactionValidation:
         return total_out
 
     def validate_funds(self):
-        if not self.get_total_amount_in_inputs() >= self.get_total_amount_in_outputs():
-            raise TransactionException(expression="",message="Invalid transaction funds")
+        total_inputs = self.get_total_amount_in_inputs()
+        total_outputs = self.get_total_amount_in_outputs()
+        if self.transaction.is_coin_base:
+            empty_inputs = total_inputs == 0
+            output_with_miner_reward = total_outputs >= MINER_REWARD
+            if not (empty_inputs or output_with_miner_reward):
+                raise TransactionException(expression="", message="Invalid coinbase transaction")
+        else:
+            if not total_inputs >= total_outputs:
+                raise TransactionException(expression="",message="Invalid transaction funds")
 
     def validate_scripts(self):
         try:

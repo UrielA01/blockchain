@@ -75,9 +75,10 @@ class TransactionOutput:
 
 
 class Transaction:
-    def __init__(self, inputs: List[TransactionInput], outputs: List[TransactionOutput]):
+    def __init__(self, inputs: List[TransactionInput], outputs: List[TransactionOutput], is_coin_base = False):
         self.inputs = inputs
         self.outputs = outputs
+        self.is_coin_base = is_coin_base
 
     def __eq__(self, other: 'Transaction'):
         return (

@@ -37,7 +37,7 @@ class ProofOfWork:
     @staticmethod
     def get_coin_base_transaction(transaction_fees: float, miner_wallet: Wallet) -> Transaction:
         transaction_output = TransactionOutput(amount=transaction_fees + MINER_REWARD, public_key_hash=miner_wallet.public_key_hash)
-        return Transaction(inputs=[], outputs=[transaction_output])
+        return Transaction(inputs=[], outputs=[transaction_output], is_coin_base=True)
 
 
 from src.core.blockchain import Blockchain

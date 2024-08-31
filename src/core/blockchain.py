@@ -33,6 +33,7 @@ class Blockchain:
 
     def add_new_block(self, new_block: Block):
         from src.core.blocks.block_validation import BlockValidation, BlockValidationException
+        from src.core.transactions.transaction_validation import TransactionException
         try:
             validate_block = BlockValidation(blockchain=self, block=new_block)
             validate_block.validate()
@@ -40,7 +41,7 @@ class Blockchain:
             self.last_block = new_block
             self.length += 1
             return new_block
-        except BlockValidationException as e:
+        except (BlockValidationException, TransactionException) as e:
             print(e.message)
             raise BlockchainException("", "Invalid blockchain")
 
