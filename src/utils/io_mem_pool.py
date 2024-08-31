@@ -2,7 +2,7 @@ import json
 import os
 from typing import List
 
-mem_pool_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../doc/mem_pool.json'))
+mem_pool_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../mem_pools/transactions.json'))
 
 def get_transactions_from_memory() -> List[dict]:
     with open(mem_pool_path, "r") as file_obj:

@@ -2,7 +2,7 @@ import json
 import os
 from typing import List
 
-known_nodes = os.path.abspath(os.path.join(os.path.dirname(__file__), '../doc/known_nodes.json'))
+known_nodes = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../mem_pools/network_nodes.json'))
 
 def get_known_nodes() -> List[dict]:
     with open(known_nodes, "r") as file_obj:

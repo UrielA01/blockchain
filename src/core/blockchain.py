@@ -93,7 +93,7 @@ class Blockchain:
             reset_transaction_memory()
             return new_block
         else:
-            raise BlockchainException("", "No transaction in mem_pool.json")
+            raise BlockchainException("", "No transaction in transactions.json")
 
 
     @staticmethod
