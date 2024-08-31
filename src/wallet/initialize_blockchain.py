@@ -2,6 +2,7 @@ from src.core.blockchain import Blockchain
 from src.core.blocks.block_validation import BlockValidationException
 from src.core.transactions.transaction import TransactionInput, TransactionOutput, Transaction
 from src.core.transactions.transaction_validation import TransactionValidation, TransactionException
+from src.network.network import Network
 from src.utils.io_mem_pool import store_transactions_in_memory
 from src.wallet.wallet import Wallet
 from src.users.albert import private_key as albert_private_key
@@ -14,67 +15,44 @@ bertrand_wallet = Wallet(private_key=bertrand_private_key)
 camille_wallet = Wallet(private_key=camille_private_key)
 
 
-def initialize_blockchain(my_wallet: Wallet) -> Blockchain:
-    blockchain = Blockchain(wallet=my_wallet)
+def initialize_blockchain(my_wallet: Wallet, network: Network) -> Blockchain:
+    network.join_network()
+    blockchain_dict = network.get_longest_blockchain()
+    blockchain = None
 
+    if blockchain_dict:
+        blockchain = Blockchain.from_json_list(blockchain_dict, wallet=my_wallet)
+    if not blockchain:
+        blockchain = Blockchain(wallet=my_wallet)
 
-    # output_0 = TransactionOutput(public_key_hash=albert_wallet.public_key_hash,
-    #                              amount=40)
-    # # No input for first transaction
-    # transaction = Transaction(outputs=[output_0], inputs=[])
-    # store_transactions_in_memory([transaction.to_dict])
-    # block_0 = blockchain.add_new_block_d(transaction)
-    #
-    # input_0 = TransactionInput(transaction_hash=block_0.transactions[0].hash,
-    #                            output_index=0)
-    # output_0 = TransactionOutput(public_key_hash=bertrand_wallet.public_key_hash,
-    #                              amount=30)
-    # output_1 = TransactionOutput(public_key_hash=albert_wallet.public_key_hash,
-    #                              amount=10)
-    # transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
-    # transaction.sign_inputs(camille_wallet)
-    # store_transactions_in_memory([transaction.to_dict])
-    #
-    # block_1 = blockchain.add_new_block_d(transaction)
-    #
-    # input_0 = TransactionInput(transaction_hash=block_1.transactions[0].hash,
-    #                            output_index=1)
-    # output_0 = TransactionOutput(public_key_hash=camille_wallet.public_key_hash,
-    #                              amount=10)
-    # transaction = Transaction(outputs=[output_0], inputs=[input_0])
-    # transaction.sign_inputs(albert_wallet)
-    # store_transactions_in_memory([transaction.to_dict])
-    #
-    # block_2 = blockchain.add_new_block_d(transaction)
-    #
-    # input_0 = TransactionInput(transaction_hash=block_2.transactions[0].hash,
-    #                            output_index=0)
-    # output_0 = TransactionOutput(public_key_hash=camille_wallet.public_key_hash,
-    #                              amount=5)
-    # output_1 = TransactionOutput(public_key_hash=bertrand_wallet.public_key_hash,
-    #                              amount=25)
-    # transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
-    # transaction.sign_inputs(albert_wallet)
-    # store_transactions_in_memory([transaction.to_dict])
-    #
-    # blockchain.add_new_block_d(transaction)
+        blockchain.create_new_block(transactions=[])
 
-    blockchain.create_new_block(transactions=[])
+        input_0 = TransactionInput(transaction_hash=blockchain.last_block.transactions[0].hash,
+                                   output_index=0)
+        output_0 = TransactionOutput(public_key_hash=my_wallet.public_key_hash,
+                                     amount=3)
+        output_1 = TransactionOutput(public_key_hash=albert_wallet.public_key_hash,
+                                     amount=3)
+        transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
+        transaction.sign_inputs(my_wallet)
 
-    input_0 = TransactionInput(transaction_hash=blockchain.last_block.transactions[0].hash,
-                               output_index=0)
-    output_0 = TransactionOutput(public_key_hash=my_wallet.public_key_hash,
-                                 amount=3)
-    output_1 = TransactionOutput(public_key_hash=albert_wallet.public_key_hash,
-                                 amount=3)
-    transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
-    transaction.sign_inputs(my_wallet)
-    try:
-        validate = TransactionValidation(blockchain, transaction)
-        validate.validate()
-        store_transactions_in_memory([transaction.to_dict])
-        blockchain.create_new_block()
-    except (TransactionException, BlockValidationException) as e:
-        print(f'error {e}')
+        try:
+            validate = TransactionValidation(blockchain, transaction)
+            validate.validate()
+            store_transactions_in_memory([transaction.to_dict])
+            blockchain.create_new_block()
+        except (TransactionException, BlockValidationException) as e:
+            print(f'error {e}')
+
+        # Uncomment to test transactions from mempool
+        # input_0 = TransactionInput(transaction_hash=blockchain.last_block.transactions[0].hash,
+        #                            output_index=0)
+        # output_0 = TransactionOutput(public_key_hash=my_wallet.public_key_hash,
+        #                              amount=1)
+        # output_1 = TransactionOutput(public_key_hash=camille_wallet.public_key_hash,
+        #                              amount=1.5)
+        # transaction = Transaction(outputs=[output_0, output_1], inputs=[input_0])
+        # transaction.sign_inputs(my_wallet)
+        # store_transactions_in_memory([transaction.to_dict])
 
     return blockchain

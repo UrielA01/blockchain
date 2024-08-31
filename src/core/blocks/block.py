@@ -11,7 +11,7 @@ class BlockHeader:
     index: int
     previous_hash: str = None
     merkle_root: str = None
-    nonce: int = None
+    nonce: int = 0
     timestamp: float = field(default_factory=lambda: time.time())
 
     @property

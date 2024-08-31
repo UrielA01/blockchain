@@ -8,6 +8,8 @@ class TransactionException(Exception):
     def __init__(self, expression, message):
         self.expression = expression
         self.message = message
+    def __str__(self):
+        return self.message
 
 class TransactionValidation:
     def __init__(self, blockchain: Blockchain, transaction: Transaction):
@@ -17,6 +19,8 @@ class TransactionValidation:
 
     def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):
         transaction = self.blockchain.get_transaction_from_utxo(utxo_hash)
+        if transaction is None:
+            raise TransactionException("", "UTXO NOT FOUND")
         return transaction.outputs[utxo_index].locking_script
 
     def get_total_amount_in_inputs(self) -> int:
@@ -50,7 +54,7 @@ class TransactionValidation:
                 stack_script = StackScript(transaction_bytes)
                 stack_script.execute(unlocking_script)
                 stack_script.execute(locking_script)
-        except ValueError as e:
+        except (ValueError, TransactionException) as e:
             print(e)
             raise TransactionException(expression="", message=f'Invalid transaction inputs - {e}')
 

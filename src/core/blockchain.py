@@ -24,28 +24,25 @@ class Blockchain:
         transactions=[],
     ))
     length: int = 1
-    current_transactions: List[Transaction] = field(default_factory=list)
-    nodes: Set[str] = field(default_factory=set)
 
-    def add_new_block_d(self, transaction: Transaction):
-        new_block_header = BlockHeader(
-            index=self.length + 1,
-            previous_hash=self.last_block.header.hash
-        )
-        new_block = Block(
-            header=new_block_header,
-            transactions=[transaction],
-            previous_block=self.last_block,
-        )
-        self.last_block = new_block
-        self.length += 1
-        return new_block
+    def __post_init__(self):
+        from src.core.blocks.block_validation import ProofOfWork
+        if self.last_block:
+            genesis_nonce = ProofOfWork.find_nonce(self.last_block.header)
+            self.last_block.header.nonce = genesis_nonce
 
     def add_new_block(self, new_block: Block):
-        new_block.previous_block = self.last_block
-        self.last_block = new_block
-        self.length += 1
-        return new_block
+        from src.core.blocks.block_validation import BlockValidation, BlockValidationException
+        try:
+            validate_block = BlockValidation(blockchain=self, block=new_block)
+            validate_block.validate()
+            new_block.previous_block = self.last_block
+            self.last_block = new_block
+            self.length += 1
+            return new_block
+        except BlockValidationException as e:
+            print(e.message)
+            raise BlockchainException("", "Invalid blockchain")
 
     def get_transaction_from_utxo(self, tx_hash: str) -> Transaction:
         current_block = self.last_block
@@ -75,7 +72,7 @@ class Blockchain:
         if transactions is None:
             transactions = get_transactions_from_memory()
             transactions = [Transaction.from_json(transaction) for transaction in transactions]
-        if not transactions is None:
+        if not (transactions is None):
             from src.core.transactions.transaction_validation import TransactionValidation
             for transaction in transactions:
                 validate = TransactionValidation(transaction=transaction, blockchain=self)
@@ -88,17 +85,26 @@ class Blockchain:
                 index=self.length + 1,
                 merkle_root=merkle_tree.root.value,
                 previous_hash=self.last_block.header.hash,
-                nonce=0
             )
             nonce = ProofOfWork.find_nonce(block_header)
             block_header.nonce = nonce
             new_block = Block(transactions=transactions, header=block_header)
-            from src.core.blocks.block_validation import BlockValidation
-            validate = BlockValidation(new_block=new_block, blockchain=self)
-            validate.validate_prev_block()
-            validate.validate_hash()
-            validate.validate_transactions()
             self.add_new_block(new_block)
             reset_transaction_memory()
+            return new_block
         else:
             raise BlockchainException("", "No transaction in mem_pool.json")
+
+
+    @staticmethod
+    def from_json_list(blockchain_dict: List[dict], wallet: Wallet):
+        try:
+            # The blockchain comes with the genesis block at the end due to the linked list nature
+            new_blockchain = Blockchain(wallet, None, 0)
+            for block in reversed(blockchain_dict):
+                block = Block.from_json(block)
+                new_blockchain.add_new_block(block)
+            return new_blockchain
+        except BlockchainException:
+            print("Received invalid blockchain")
+            return None

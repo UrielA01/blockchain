@@ -2,7 +2,6 @@ import json
 from typing import List
 
 from src.utils.crypto_utils import calculate_sha256
-from src.utils.io_mem_pool import get_transactions_from_memory, store_transactions_in_memory
 from src.wallet.wallet import Wallet
 
 def handle_transaction_data(data):
@@ -46,7 +45,7 @@ class TransactionInput:
 
 
 class TransactionOutput:
-    def __init__(self, public_key_hash: bytes, amount: int):
+    def __init__(self, public_key_hash: bytes, amount: float):
         self.amount = amount
         self.public_key_hash = public_key_hash
         self.locking_script = (

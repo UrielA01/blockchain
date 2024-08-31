@@ -12,6 +12,9 @@ class BlockValidationException(Exception):
         self.expression = expression
         self.message = message
 
+    def __str__(self):
+        return self.message
+
 class ProofOfWork:
     def __init__(self):
         pass
@@ -39,23 +42,29 @@ class ProofOfWork:
 
 from src.core.blockchain import Blockchain
 class BlockValidation:
-    def __init__(self, blockchain: Blockchain, new_block: Block):
+    def __init__(self, blockchain: Blockchain, block: Block):
         self.blockchain = blockchain
-        self.new_block = new_block
+        self.block = block
 
     def validate_prev_block(self):
-        if not self.blockchain.last_block.header.hash == self.new_block.header.previous_hash:
+        if not (self.blockchain.last_block.header.hash == self.block.header.previous_hash):
             raise BlockValidationException("", "Invalid previous hash")
 
     def validate_hash(self):
-        if not ProofOfWork.is_valid_nonce(self.new_block.header):
+        if not ProofOfWork.is_valid_nonce(self.block.header):
             raise BlockValidationException("", "Invalid hash")
 
     def validate_transactions(self):
         try:
-            for tx in self.new_block.transactions:
+            for tx in self.block.transactions:
                 validate = TransactionValidation(transaction=tx, blockchain=self.blockchain)
                 validate.validate()
         except TransactionException:
             raise BlockValidationException("", "Invalid transactions")
+
+    def validate(self):
+        if self.blockchain.last_block:
+            self.validate_prev_block()
+        self.validate_hash()
+        self.validate_transactions()
 
