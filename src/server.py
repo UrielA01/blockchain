@@ -1,55 +1,31 @@
 from flask import Flask, request, jsonify
-import sys
-import json
 import atexit
 
 from src.core.blocks.block import Block
 from src.core.blocks.block_validation import BlockValidation, BlockValidationException
 from src.core.transactions.transaction import Transaction
 from src.core.transactions.transaction_validation import TransactionException, TransactionValidation
-from src.network.node import SendNode
-from src.utils.crypto_utils import calculate_sha256
-from src.utils.io_known_nodes import remove_known_node, add_known_nodes
+from src.network.node import SendNode, Node
+from src.utils.io_known_nodes import add_known_nodes
 from src.utils.io_mem_pool import store_transactions_in_memory
+from src.utils.server_utils import get_host_port, cleanup, generate_message_id
 from src.wallet.initialize_blockchain import initialize_blockchain
 from src.wallet.wallet import Wallet
-from src.network.node import Node
 from src.network.network import Network
 app = Flask(__name__)
 app.json.sort_keys = False
-
-def get_host_port(default_host='127.0.0.1', default_port=5000):
-    port_num = default_port
-    hostname = default_host
-    try:
-        if len(sys.argv) >= 2:
-            port_num = int(sys.argv[1])
-        if len(sys.argv) >= 3:
-            hostname = sys.argv[2]
-    except ValueError:
-        port_num = default_port
-    return hostname, port_num
 
 host, port = get_host_port()
 my_node = Node(host, port)
 my_wallet = Wallet()
 add_known_nodes([my_node.to_dict])
 network = Network(my_node)
+send_node = SendNode(wallet=my_wallet, network=network)
 blockchain = initialize_blockchain(my_wallet=my_wallet, network=network)
 
-send_node = SendNode(wallet=my_wallet, network=network)
-
-
-def cleanup():
-    remove_known_node(my_node.to_dict)
-    print("Closing server, removing self from known_nodes")
-
-atexit.register(cleanup)
-
-def generate_message_id(message):
-    return calculate_sha256(json.dumps(message, sort_keys=True).encode())
-
 processed_messages = set()
+
+atexit.register(lambda: cleanup(my_node))
 
 @app.route("/transaction", methods=['POST'])
 def validate_transaction():
@@ -100,11 +76,8 @@ def send_chain():
 def advertise():
     content = request.json
     node = content["node"]
-    try:
-        new_node = Node.from_json(node)
-        network.add_known_nodes([new_node])
-    except Exception as e:
-        return f'{e}', 400
+    new_node = Node.from_json(node)
+    network.add_known_nodes([new_node])
     return "New node advertisement success", 200
 
 
