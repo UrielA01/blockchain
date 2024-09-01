@@ -29,11 +29,10 @@ class Node:
                 return req_return.json()
             else:
                 raise NodeException(f"Unexpected status code {req_return.status_code} from {url}")
-        except requests.ConnectionError as e:
+        except requests.ConnectionError:
             print(f'Unable to connect to node - {self.hostname}')
             print(f'Removing node - {self.hostname} - from network_nodes.js')
             remove_known_node(self.to_dict)
-            # raise NodeException(f'Unable to connect to node - {self.hostname}')
 
     def get(self, path: str):
         try:
@@ -44,7 +43,7 @@ class Node:
                 return req_return.json()
             else:
                 raise NodeException(f"Unexpected status code {req_return.status_code} from {url}")
-        except requests.ConnectionError as e:
+        except requests.ConnectionError:
             print(f'Unable to connect to node - {self.hostname}')
             print(f'Removing node - {self.hostname} - from network_nodes.js')
             remove_known_node(self.to_dict)

@@ -20,7 +20,6 @@ def add_known_nodes(nodes: List[dict]):
         file_obj.write(text)
 
 def remove_known_node(node: dict):
-
     current_known_nodes = get_known_nodes()
     if node in current_known_nodes:
         current_known_nodes.remove(node)
