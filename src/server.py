@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import atexit
 
 from src.core.blocks.block import Block
-from src.core.blocks.block_validation import BlockValidation, BlockValidationException
+from src.core.blocks.block_validation import BlockValidation, BlockException
 from src.core.transactions.transaction import Transaction
 from src.core.transactions.transaction_validation import TransactionException, TransactionValidation
 from src.network.node import SendNode, Node
@@ -63,7 +63,7 @@ def receive_block():
             validate.validate()
             blockchain.add_new_block(new_block=new_block)
             send_node.broadcast_block(new_block)
-    except BlockValidationException as e:
+    except BlockException as e:
         return f'{e}', 400
     return "New block added", 200
 

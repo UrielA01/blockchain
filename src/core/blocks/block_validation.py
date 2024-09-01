@@ -7,9 +7,9 @@ from src.utils.consts import NUMBER_OF_LEADING_ZEROS_IN_HASH, MINER_REWARD
 from src.wallet.wallet import Wallet
 
 
-class BlockValidationException(Exception):
-    def __init__(self, expression, message):
-        self.expression = expression
+class BlockException(Exception):
+    def __init__(self, message, *args):
+        super().__init__(message, *args)
         self.message = message
 
     def __str__(self):
@@ -48,11 +48,11 @@ class BlockValidation:
 
     def validate_prev_block(self):
         if not (self.blockchain.last_block.header.hash == self.block.header.previous_hash):
-            raise BlockValidationException("", "Invalid previous hash")
+            raise BlockException("Invalid previous hash")
 
     def validate_hash(self):
         if not ProofOfWork.is_valid_nonce(self.block.header):
-            raise BlockValidationException("", "Invalid hash")
+            raise BlockException("Invalid hash")
 
     def validate_transactions(self):
         try:
@@ -60,7 +60,7 @@ class BlockValidation:
                 validate = TransactionValidation(transaction=tx, blockchain=self.blockchain)
                 validate.validate()
         except TransactionException:
-            raise BlockValidationException("", "Invalid transactions")
+            raise BlockException("Invalid transactions")
 
     def validate(self):
         if self.blockchain.last_block:

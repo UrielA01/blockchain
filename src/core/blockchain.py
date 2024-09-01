@@ -11,9 +11,12 @@ from src.wallet.wallet import Wallet
 
 
 class BlockchainException(Exception):
-    def __init__(self, expression, message):
-        self.expression = expression
+    def __init__(self, message, *args):
+        super().__init__(message, *args)
         self.message = message
+
+    def __str__(self):
+        return self.message
 
 
 @dataclass
@@ -32,7 +35,7 @@ class Blockchain:
             self.last_block.header.nonce = genesis_nonce
 
     def add_new_block(self, new_block: Block):
-        from src.core.blocks.block_validation import BlockValidation, BlockValidationException
+        from src.core.blocks.block_validation import BlockValidation, BlockException
         from src.core.transactions.transaction_validation import TransactionException
         try:
             validate_block = BlockValidation(blockchain=self, block=new_block)
@@ -41,7 +44,7 @@ class Blockchain:
             self.last_block = new_block
             self.length += 1
             return new_block
-        except (BlockValidationException, TransactionException) as e:
+        except (BlockException, TransactionException) as e:
             print(e.message)
             raise BlockchainException("", "Invalid blockchain")
 
@@ -81,7 +84,7 @@ class Blockchain:
                     validate.validate()
             except TransactionException as e:
                 print(e)
-                raise BlockchainException("", "Invalid transactions")
+                raise BlockchainException("Invalid transactions")
             transaction_fees = self.get_transaction_fees(transactions)
             coinbase_transaction = ProofOfWork.get_coin_base_transaction(transaction_fees, miner_wallet=self.wallet)
             transactions.append(coinbase_transaction)
@@ -98,7 +101,7 @@ class Blockchain:
             reset_transaction_memory()
             return new_block
         else:
-            raise BlockchainException("", "No transaction in transactions.json")
+            raise BlockchainException("No transaction in transactions.json")
 
 
     @staticmethod

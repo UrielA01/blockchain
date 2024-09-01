@@ -1,5 +1,5 @@
 from src.core.blockchain import Blockchain
-from src.core.blocks.block_validation import BlockValidationException
+from src.core.blocks.block_validation import BlockException
 from src.core.transactions.transaction import TransactionInput, TransactionOutput, Transaction
 from src.core.transactions.transaction_validation import TransactionValidation, TransactionException
 from src.network.network import Network
@@ -41,9 +41,9 @@ def initialize_blockchain(my_wallet: Wallet, network: Network) -> Blockchain:
             validate.validate()
             store_transactions_in_memory([transaction.to_dict])
             blockchain.create_new_block()
-        except (TransactionException, BlockValidationException) as e:
+        except (TransactionException, BlockException) as e:
             print(e)
-            raise TransactionException("", "Invalid transaction")
+            raise TransactionException("Invalid transaction")
 
         # Uncomment to test transactions from mempool
         # input_0 = TransactionInput(transaction_hash=blockchain.last_block.transactions[0].hash,
