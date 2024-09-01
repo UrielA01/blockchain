@@ -3,6 +3,7 @@ from typing import List
 
 from src.core.blocks.block import Block
 from src.core.transactions.transaction import Transaction
+from src.utils.io_known_nodes import remove_known_node
 from src.wallet.wallet import Wallet
 
 class NodeException(Exception):
@@ -20,10 +21,19 @@ class Node:
         self.hostname = f'http://{ip}:{port}'
 
     def post(self, path: str, data: dict) -> requests.Response:
-        url = f"{self.hostname}{path}"
-        req_return = requests.post(url, json=data)
-        req_return.raise_for_status()
-        return req_return
+        try:
+            url = f"{self.hostname}{path}"
+            req_return = requests.post(url, json=data)
+            req_return.raise_for_status()
+            if req_return.status_code == 200:
+                return req_return.json()
+            else:
+                raise NodeException(f"Unexpected status code {req_return.status_code} from {url}")
+        except requests.ConnectionError as e:
+            print(f'Unable to connect to node - {self.hostname}')
+            print(f'Removing node - {self.hostname} - from network_nodes.js')
+            remove_known_node(self.to_dict)
+            # raise NodeException(f'Unable to connect to node - {self.hostname}')
 
     def get(self, path: str):
         try:
@@ -36,7 +46,8 @@ class Node:
                 raise NodeException(f"Unexpected status code {req_return.status_code} from {url}")
         except requests.ConnectionError as e:
             print(f'Unable to connect to node - {self.hostname}')
-            raise NodeException(e, f'Unable to connect to node - {self.hostname}')
+            print(f'Removing node - {self.hostname} - from network_nodes.js')
+            remove_known_node(self.to_dict)
 
     @property
     def to_dict(self):
@@ -59,6 +70,9 @@ class Node:
     def get_blockchain(self):
         return self.get("/chain")
 
+    def ping(self):
+        return self.get("/")
+
     def __eq__(self, other):
         return self.ip == other.ip and self.port == other.port
 
@@ -68,17 +82,18 @@ class SendNode:
         self.wallet = wallet
         self.network = network
 
-    def broadcast(self, path: str,  data: dict):
+    def broadcast_post(self, path: str, data: dict):
         for node in self.network.known_nodes:
-            try:
-                node.post(path, data)
-            except requests.ConnectionError as e:
-                print(f'Unable to connect to node - {node.hostname}')
-                raise e
+            node.post(path, data)
+
+    def broadcast_get(self, path: str):
+        for node in self.network.known_nodes:
+            node.get(path)
 
     def broadcast_transaction(self, transaction: Transaction, path: str="/transaction"):
         transaction.sign_inputs(owner=self.wallet)
-        self.broadcast(path, {"transaction": transaction.send_to_nodes()})
+        self.broadcast_post(path, {"transaction": transaction.send_to_nodes()})
 
     def broadcast_block(self, block: Block, path: str="/block"):
-        self.broadcast(path, {"block": block.to_dict})
+        self.broadcast_post(path, {"block": block.to_dict})
+

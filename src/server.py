@@ -27,6 +27,10 @@ processed_messages = set()
 
 atexit.register(lambda: cleanup(my_node))
 
+@app.route("/", methods=['GET'])
+def index_route():
+    return "Hello world", 200
+
 @app.route("/transaction", methods=['POST'])
 def validate_transaction():
     content = request.json
