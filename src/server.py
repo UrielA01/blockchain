@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-import atexit
 import signal
 import sys
 
@@ -32,8 +31,6 @@ def handle_close(*args):
     sys.exit(0)
 signal.signal(signal.SIGINT, handle_close)
 signal.signal(signal.SIGTERM, handle_close)
-
-atexit.register(lambda: cleanup(my_node))
 @app.route("/", methods=['GET'])
 def index_route():
     return "Hello world", 200
