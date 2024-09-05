@@ -11,8 +11,5 @@ ENV PORT=5000
 ENV HOST=0.0.0.0
 ENV PYTHONPATH="/app"
 
-# run.sh is used to run the cleanup script in server.py
-RUN echo "#!/bin/bash \n exec python3 src/server.py \$PORT \$HOST" > ./run.sh
-RUN chmod +x ./run.sh
-CMD ["./run.sh"]
+CMD ["python3", "src/server.py"]
 EXPOSE 5000

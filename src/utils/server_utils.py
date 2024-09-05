@@ -1,21 +1,23 @@
 import sys
 import json
+import os
 
 from src.utils.crypto_utils import calculate_sha256
 from src.utils.io_known_nodes import remove_known_node
 from src.network.node import Node
 
 
-def get_host_port(default_host='127.0.0.1', default_port=5000):
-    port_num = default_port
-    hostname = default_host
+def get_host_port():
+    default_host = '0.0.0.0'
+    default_port = 5000
     try:
-        if len(sys.argv) >= 2:
-            port_num = int(sys.argv[1])
-        if len(sys.argv) >= 3:
-            hostname = sys.argv[2]
-    except ValueError:
-        port_num = default_port
+        port_num = int(sys.argv[1])
+    except (ValueError, IndexError):
+        port_num = os.getenv('PORT', default_port)
+    try:
+        hostname = sys.argv[2]
+    except (ValueError, IndexError):
+        hostname = os.getenv('HOST', default_host)
     return hostname, port_num
 
 def cleanup(my_node: Node):
