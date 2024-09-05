@@ -91,6 +91,7 @@ class Transaction:
         return {
             "inputs": [tx_input.to_json() for tx_input in self.inputs],
             "outputs": [tx_output.to_json() for tx_output in self.outputs],
+            "is_coin_base": self.is_coin_base
         }
 
     @property
@@ -121,7 +122,8 @@ class Transaction:
     def from_json(data: str | dict) -> 'Transaction':
         inputs = [TransactionInput.from_json(input_data) for input_data in data['inputs']]
         outputs = [TransactionOutput.from_json(output_data) for output_data in data['outputs']]
-        return Transaction(inputs, outputs)
+        is_coin_base = bool(data['is_coin_base'])
+        return Transaction(inputs, outputs, is_coin_base=is_coin_base)
 
     def send_to_nodes(self) -> dict:
         return {

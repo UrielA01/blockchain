@@ -82,7 +82,7 @@ def advertise():
     node = content["node"]
     new_node = Node.from_json(node)
     network.add_known_nodes([new_node])
-    return "New node advertisement success", 200
+    return jsonify({"status": "ok"})
 
 
 @app.route("/known_nodes", methods=['GET'])
@@ -99,4 +99,4 @@ def mine():
     return "Mined successfully", 200
 
 if __name__ == '__main__':
-    app.run(host=host, port=port)
+    app.run(host="0.0.0.0", port=port)
