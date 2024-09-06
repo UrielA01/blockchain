@@ -1,10 +1,7 @@
 import requests
 from typing import List
 
-from src.core.blocks.block import Block
-from src.core.transactions.transaction import Transaction
 from src.utils.io_known_nodes import remove_known_node
-from src.wallet.wallet import Wallet
 
 class NodeException(Exception):
     def __init__(self, message, *args):
@@ -23,7 +20,7 @@ class Node:
     def post(self, path: str, data: dict) -> requests.Response:
         try:
             url = f"{self.hostname}{path}"
-            req_return = requests.post(url, json=data)
+            req_return = requests.post(url, json=data, timeout=5)
             req_return.raise_for_status()
             if req_return.status_code == 200:
                 return req_return.json()
@@ -37,7 +34,7 @@ class Node:
     def get(self, path: str):
         try:
             url = f"{self.hostname}{path}"
-            req_return = requests.get(url)
+            req_return = requests.get(url, timeout=5)
             req_return.raise_for_status()
             if req_return.status_code == 200:
                 return req_return.json()
@@ -74,25 +71,3 @@ class Node:
 
     def __eq__(self, other):
         return self.ip == other.ip and self.port == other.port
-
-from src.network.network import Network
-class SendNode:
-    def __init__(self, network: Network, wallet: Wallet = Wallet()):
-        self.wallet = wallet
-        self.network = network
-
-    def broadcast_post(self, path: str, data: dict):
-        for node in self.network.known_nodes:
-            node.post(path, data)
-
-    def broadcast_get(self, path: str):
-        for node in self.network.known_nodes:
-            node.get(path)
-
-    def broadcast_transaction(self, transaction: Transaction, path: str="/transaction"):
-        transaction.sign_inputs(owner=self.wallet)
-        self.broadcast_post(path, {"transaction": transaction.send_to_nodes()})
-
-    def broadcast_block(self, block: Block, path: str="/block"):
-        self.broadcast_post(path, {"block": block.to_dict})
-

@@ -6,7 +6,7 @@ from src.core.blocks.block import Block
 from src.core.blocks.block_validation import BlockValidation, BlockException
 from src.core.transactions.transaction import Transaction
 from src.core.transactions.transaction_validation import TransactionException, TransactionValidation
-from src.network.node import SendNode, Node
+from src.network.node import Node
 from src.utils.io_known_nodes import add_known_nodes
 from src.utils.io_mem_pool import store_transactions_in_memory
 from src.utils.server_utils import get_host_port, cleanup, generate_message_id
@@ -20,8 +20,7 @@ host, port = get_host_port()
 my_node = Node(host, port)
 my_wallet = Wallet()
 add_known_nodes([my_node.to_dict])
-network = Network(my_node)
-send_node = SendNode(wallet=my_wallet, network=network)
+network = Network(my_node, my_wallet)
 blockchain = initialize_blockchain(my_wallet=my_wallet, network=network)
 
 processed_messages = set()
@@ -66,7 +65,7 @@ def receive_block():
             validate = BlockValidation(block=new_block, blockchain=blockchain)
             validate.validate()
             blockchain.add_new_block(new_block=new_block)
-            send_node.broadcast_block(new_block)
+            network.broadcast_block(new_block)
     except BlockException as e:
         return f'{e}', 400
     return "New block added", 200
@@ -99,7 +98,7 @@ def mine():
     new_block = blockchain.create_new_block()
     message_id = generate_message_id({"block": new_block.to_dict})
     processed_messages.add(message_id)
-    send_node.broadcast_block(new_block)
+    network.broadcast_block(new_block)
     return "Mined successfully", 200
 
 if __name__ == '__main__':

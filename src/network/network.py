@@ -1,12 +1,16 @@
+from core.blocks.block import Block
+from core.transactions.transaction import Transaction
 from src.network.node import Node
 from src.utils.io_known_nodes import add_known_nodes, get_known_nodes
 from typing import List
 
+from wallet.wallet import Wallet
+
 
 class Network:
-
-    def __init__(self, node: Node):
+    def __init__(self, node: Node, wallet: Wallet):
         self.node = node
+        self.wallet = wallet
 
     @property
     def known_nodes(self) -> List[Node]:
@@ -17,12 +21,6 @@ class Network:
                 known_nodes.append(node)
         return known_nodes
 
-    def add_known_nodes(self, nodes: List[Node]):
-        for node in nodes:
-            if node not in self.known_nodes:
-                self.known_nodes.append(node)
-                add_known_nodes([node.to_dict for node in nodes])
-
     @property
     def other_nodes_exist(self) -> bool:
         if len(self.known_nodes) == 0:
@@ -31,6 +29,12 @@ class Network:
             return False
         else:
             return True
+
+    def add_known_nodes(self, nodes: List[Node]):
+        for node in nodes:
+            if node not in self.known_nodes:
+                self.known_nodes.append(node)
+                add_known_nodes([node.to_dict for node in nodes])
 
     def advertise_to_all_known_nodes(self):
         for node in self.known_nodes:
@@ -50,7 +54,6 @@ class Network:
             self.set_known_nodes_from_known_nodes()
             self.advertise_to_all_known_nodes()
 
-
     def get_longest_blockchain(self):
         longest_blockchain_size = 0
         longest_blockchain = None
@@ -62,3 +65,18 @@ class Network:
                     longest_blockchain_size = blockchain_length
                     longest_blockchain = blockchain
         return longest_blockchain
+
+    def broadcast_post(self, path: str, data: dict):
+        for node in self.known_nodes:
+            node.post(path, data)
+
+    def broadcast_get(self, path: str):
+        for node in self.known_nodes:
+            node.get(path)
+
+    def broadcast_transaction(self, transaction: Transaction, path: str="/transaction"):
+        transaction.sign_inputs(owner=self.wallet)
+        self.broadcast_post(path, {"transaction": transaction.send_to_nodes()})
+
+    def broadcast_block(self, block: Block, path: str="/block"):
+        self.broadcast_post(path, {"block": block.to_dict})
