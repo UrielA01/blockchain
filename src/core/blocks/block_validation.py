@@ -2,7 +2,7 @@ import copy
 
 from src.core.blocks.block import BlockHeader, Block
 from src.core.transactions.transaction import Transaction, TransactionOutput
-from src.core.transactions.transaction_validation import TransactionValidation, TransactionException
+from src.core.transactions.transaction_validation import TransactionValidation, TransactionValidationException
 from src.utils.consts import NUMBER_OF_LEADING_ZEROS_IN_HASH, MINER_REWARD
 from src.wallet.wallet import Wallet
 
@@ -59,7 +59,7 @@ class BlockValidation:
             for tx in self.block.transactions:
                 validate = TransactionValidation(transaction=tx, blockchain=self.blockchain)
                 validate.validate()
-        except TransactionException:
+        except TransactionValidationException:
             raise BlockException("Invalid transactions")
 
     def validate(self):

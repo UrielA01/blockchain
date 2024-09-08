@@ -1,3 +1,4 @@
+from core.transactions.script import StackScriptException
 from src.core.blockchain import Blockchain
 from src.core.transactions.script import StackScript
 from src.core.transactions.transaction import Transaction
@@ -7,13 +8,8 @@ import json
 from src.utils.consts import MINER_REWARD
 
 
-class TransactionException(Exception):
-    def __init__(self, message, *args):
-        super().__init__(message, *args)
-        self.message = message
-
-    def __str__(self):
-        return self.message
+class TransactionValidationException(Exception):
+    pass
 
 class TransactionValidation:
     def __init__(self, blockchain: Blockchain, transaction: Transaction):
@@ -22,9 +18,8 @@ class TransactionValidation:
 
     def get_locking_script_from_utxo(self, utxo_hash: str, utxo_index: int):
         transaction = self.blockchain.get_transaction_from_utxo(utxo_hash)
-        if transaction is None:
-            raise TransactionException("UTXO not found")
-        return transaction.outputs[utxo_index].locking_script
+        if not (transaction is None):
+            return transaction.outputs[utxo_index].locking_script
 
     def get_total_amount_in_inputs(self) -> int:
         total_in = 0
@@ -49,10 +44,10 @@ class TransactionValidation:
             empty_inputs = total_inputs == 0
             output_with_miner_reward = total_outputs >= MINER_REWARD
             if not (empty_inputs or output_with_miner_reward):
-                raise TransactionException("Invalid coinbase transaction")
+                raise TransactionValidationException("Invalid coinbase transaction")
         else:
             if not total_inputs >= total_outputs:
-                raise TransactionException("Invalid transaction funds")
+                raise TransactionValidationException("Invalid transaction funds")
 
     def validate_scripts(self):
         try:
@@ -65,10 +60,9 @@ class TransactionValidation:
                 stack_script = StackScript(transaction_bytes)
                 stack_script.execute(unlocking_script)
                 stack_script.execute(locking_script)
-        except (ValueError, TransactionException) as e:
-            print(e)
-            raise TransactionException(f'Invalid transaction inputs - {e}')
+        except (StackScriptException, TransactionValidationException) as e:
+            raise TransactionValidationException(f'Invalid transaction inputs - {e}')
 
     def validate(self):
-        self.validate_funds()
         self.validate_scripts()
+        self.validate_funds()

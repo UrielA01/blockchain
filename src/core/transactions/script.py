@@ -3,6 +3,9 @@ from src.wallet.wallet import Wallet
 
 import binascii
 
+class StackScriptException(Exception):
+    pass
+
 class Stack:
     def __init__(self):
         self.elements = []
@@ -50,7 +53,7 @@ class StackScript(Stack):
         last_element = self.pop()
         second_last_element = self.pop()
         if not last_element == second_last_element:
-            raise ValueError("Invalid hash")
+            raise StackScriptException("Invalid hash")
 
     def op_checksig(self):
         """
@@ -65,7 +68,7 @@ class StackScript(Stack):
         signature = self.pop()
         public_key_bytes = public_key.encode("utf-8")
         if not Wallet.valid_signature(binascii.unhexlify(signature), public_key_bytes, self.transaction_bytes):
-            raise ValueError("Invalid signature")
+            raise StackScriptException("Invalid signature")
 
 
     def execute(self, script: str):

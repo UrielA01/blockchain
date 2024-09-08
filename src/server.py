@@ -5,7 +5,7 @@ import sys
 from src.core.blocks.block import Block
 from src.core.blocks.block_validation import BlockValidation, BlockException
 from src.core.transactions.transaction import Transaction
-from src.core.transactions.transaction_validation import TransactionException, TransactionValidation
+from src.core.transactions.transaction_validation import TransactionValidationException, TransactionValidation
 from src.network.node import Node
 from src.utils.io_known_nodes import add_known_nodes
 from src.utils.io_mem_pool import store_transactions_in_memory
@@ -43,7 +43,7 @@ def validate_transaction():
             validate = TransactionValidation(transaction=transaction, blockchain=blockchain)
             validate.validate()
             store_transactions_in_memory([transaction.to_dict])
-    except TransactionException as transaction_exception:
+    except TransactionValidationException as transaction_exception:
         return f'{transaction_exception}', 400
     return "Transaction success", 200
 
