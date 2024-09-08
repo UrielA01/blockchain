@@ -4,22 +4,13 @@ x-node: &nodebase
     - p2p
   volumes:
     - ./mem_pools:/app/mem_pools
-  depends_on:
-    node1:
-      condition: service_healthy
+
 
 services:
   miner:
-    build: .
-    container_name: node1
+    <<: *nodebase
     ports:
       - "5000:5000"
-    networks:
-      - p2p
-    environment:
-      HOST: "node1"
-    volumes:
-      - /home/urielazar/Documents/Projects/blockchain/mem_pools:/app/mem_pools
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5000/chain" ]
       interval: 10s
@@ -31,6 +22,9 @@ services:
     deploy:
       mode: replicated
       replicas: 3
+    depends_on:
+      miner:
+        condition: service_healthy
 
 networks:
   p2p:
