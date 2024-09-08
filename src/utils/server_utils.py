@@ -1,14 +1,14 @@
 import sys
 import json
 import os
+import socket
 
 from src.utils.crypto_utils import calculate_sha256
 from src.utils.io_known_nodes import remove_known_node
 from src.network.node import Node
 
-
 def get_host_port():
-    default_host = '0.0.0.0'
+    default_host = socket.gethostname()
     default_port = 5000
     try:
         port_num = int(sys.argv[1])

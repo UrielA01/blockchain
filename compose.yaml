@@ -1,6 +1,16 @@
+x-node: &nodebase
+  build: .
+  networks:
+    - p2p
+  volumes:
+    - ./mem_pools:/app/mem_pools
+  depends_on:
+    node1:
+      condition: service_healthy
+
 services:
-  node1:
-    image: blockchain:latest
+  miner:
+    build: .
     container_name: node1
     ports:
       - "5000:5000"
@@ -16,35 +26,11 @@ services:
       timeout: 5s
       retries: 3
 
-  node2:
-    image: blockchain:latest
-    container_name: node2
-    ports:
-      - "5001:5000"
-    networks:
-      - p2p
-    environment:
-      HOST: "node2"
-    volumes:
-      - ./mem_pools:/app/mem_pools
-    depends_on:
-      node1:
-        condition: service_healthy
-
-  node3:
-    image: blockchain:latest
-    container_name: node3
-    ports:
-      - "5002:5000"
-    networks:
-      - p2p
-    environment:
-      HOST: "node3"
-    volumes:
-      - ./mem_pools:/app/mem_pools
-    depends_on:
-      node1:
-        condition: service_healthy
+  node:
+    <<: *nodebase
+    deploy:
+      mode: replicated
+      replicas: 3
 
 networks:
   p2p:
