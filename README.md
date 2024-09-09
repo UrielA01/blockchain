@@ -60,12 +60,12 @@ pip install -r requirements.txt
 To run the server, navigate to the project root and use the following command:
 ```bash
 export PYTHONPATH=$(pwd)
-python src/server.py
+python src/server.py 
 ```
 ### Running in Multiple Nodes
 You can run multiple instances of the node on different ports. Use the following command:
 ```bash
-python src/server 5001
+python src/server --port 5001
 ```
 
 ## Docker Setup

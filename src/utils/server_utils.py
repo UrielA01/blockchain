@@ -2,22 +2,20 @@ import sys
 import json
 import os
 import socket
+import argparse
 
 from src.utils.crypto_utils import calculate_sha256
 from src.utils.io_known_nodes import remove_known_node
 from src.network.node import Node
 
 def get_host_port():
-    default_host = socket.gethostname()
-    default_port = 5000
-    try:
-        port_num = int(sys.argv[1])
-    except (ValueError, IndexError):
-        port_num = os.getenv('PORT', default_port)
-    try:
-        hostname = sys.argv[2]
-    except (ValueError, IndexError):
-        hostname = os.getenv('HOST', default_host)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--port", help="Port")
+    parser.add_argument( "--hostname", help="Hostname")
+    args = parser.parse_args()
+
+    hostname = args.hostname if args.hostname else os.getenv('HOSTNAME', socket.gethostname())
+    port_num = args.port if args.port else os.getenv('PORT', 5000)
     return hostname, port_num
 
 def cleanup(my_node: Node):
