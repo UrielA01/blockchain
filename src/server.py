@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import signal
 import sys
 
@@ -13,8 +14,11 @@ from src.utils.server_utils import get_host_port, cleanup, generate_message_id
 from src.wallet.initialize_blockchain import initialize_blockchain
 from src.wallet.wallet import Wallet
 from src.network.network import Network
+
 app = Flask(__name__)
 app.json.sort_keys = False
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
 
 host, port = get_host_port()
 my_node = Node(host, port)
@@ -25,14 +29,20 @@ blockchain = initialize_blockchain(my_wallet=my_wallet, network=network)
 
 processed_messages = set()
 
+
 def handle_close(*args):
     cleanup(my_node)
     sys.exit(0)
+
+
 signal.signal(signal.SIGINT, handle_close)
 signal.signal(signal.SIGTERM, handle_close)
+
+
 @app.route("/", methods=['GET'])
 def index_route():
     return "Hello world", 200
+
 
 @app.route("/transaction", methods=['POST'])
 def validate_transaction():
@@ -40,12 +50,14 @@ def validate_transaction():
     try:
         if content.get('transaction'):
             transaction = Transaction.from_json(content.get('transaction'))
-            validate = TransactionValidation(transaction=transaction, blockchain=blockchain)
+            validate = TransactionValidation(
+                transaction=transaction, blockchain=blockchain)
             validate.validate()
             store_transactions_in_memory([transaction.to_dict])
     except TransactionValidationException as transaction_exception:
         return f'{transaction_exception}', 400
     return "Transaction success", 200
+
 
 @app.route("/block", methods=['POST'])
 def receive_block():
@@ -70,6 +82,7 @@ def receive_block():
         return f'{e}', 400
     return "New block added", 200
 
+
 @app.route("/chain", methods=['GET'])
 def send_chain():
     data = []
@@ -78,6 +91,25 @@ def send_chain():
         data.append(current_block.to_dict)
         current_block = current_block.previous_block
     return jsonify(data)
+
+
+@app.route("/chain/headers", methods=['GET'])
+def send_chain_headers_only():
+    data = []
+    current_block = blockchain.last_block
+    while current_block:
+        data.append(current_block.header    .to_dict)
+        current_block = current_block.previous_block
+    return jsonify(data)
+
+
+@app.route("/block/<index>", methods=['GET'])
+def get_block_by_index(index: str):
+    block = blockchain.get_block_by_index(int(index))
+    if not block:
+        return "Block not found", 404
+    return jsonify(block.to_dict)
+
 
 @app.route("/advertise", methods=['POST'])
 def advertise():
@@ -93,6 +125,7 @@ def known_node():
     known_nodes_dict = [node.to_dict for node in network.known_nodes]
     return jsonify(known_nodes_dict)
 
+
 @app.route("/mine", methods=['POST'])
 def mine():
     new_block = blockchain.create_new_block()
@@ -100,6 +133,7 @@ def mine():
     processed_messages.add(message_id)
     network.broadcast_block(new_block)
     return "Mined successfully", 200
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=port)

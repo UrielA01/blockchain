@@ -53,14 +53,14 @@ class Blockchain:
         from src.core.transactions.transaction_validation import TransactionValidationException
         raise TransactionValidationException("UTXO not found")
 
-
     def get_transaction_fees(self, transactions: List[Transaction]) -> float:
         transaction_fees = 0
         for transaction in transactions:
             input_amount = 0
             output_amount = 0
             for transaction_input in transaction.inputs:
-                utxo = self.get_transaction_from_utxo(transaction_input.transaction_hash)
+                utxo = self.get_transaction_from_utxo(
+                    transaction_input.transaction_hash)
                 if utxo:
                     utxo_amount = utxo.outputs[transaction_input.output_index].amount
                     input_amount = input_amount + utxo_amount
@@ -73,12 +73,14 @@ class Blockchain:
         from src.core.blocks.block_validation import ProofOfWork
         if transactions is None:
             transactions = get_transactions_from_memory()
-            transactions = [Transaction.from_json(transaction) for transaction in transactions]
+            transactions = [Transaction.from_json(
+                transaction) for transaction in transactions]
         from src.core.transactions.transaction_validation import TransactionValidation, TransactionValidationException
         valid_transactions = []
         for transaction in transactions:
             try:
-                validate = TransactionValidation(transaction=transaction, blockchain=self)
+                validate = TransactionValidation(
+                    transaction=transaction, blockchain=self)
                 validate.validate()
                 valid_transactions.append(transaction)
             except TransactionValidationException as e:
@@ -87,9 +89,11 @@ class Blockchain:
         if len(valid_transactions) == 0:
             print("Warning: Transaction list is empty")
         transaction_fees = self.get_transaction_fees(valid_transactions)
-        coinbase_transaction = ProofOfWork.get_coin_base_transaction(transaction_fees, miner_wallet=self.wallet)
+        coinbase_transaction = ProofOfWork.get_coin_base_transaction(
+            transaction_fees, miner_wallet=self.wallet)
         valid_transactions.append(coinbase_transaction)
-        merkle_tree = MerkleTree([json.dumps(tx.to_dict_no_script).encode('utf-8') for tx in valid_transactions])
+        merkle_tree = MerkleTree(
+            [json.dumps(tx.to_dict_no_script).encode('utf-8') for tx in valid_transactions])
         block_header = BlockHeader(
             index=self.length + 1,
             merkle_root=merkle_tree.root.value,
@@ -102,6 +106,13 @@ class Blockchain:
         reset_transaction_memory()
         return new_block
 
+    def get_block_by_index(self, index: int):
+        current_block = self.last_block
+        while current_block:
+            if current_block.header.index == index:
+                return current_block
+            current_block = current_block.previous_block
+        return None
 
     @staticmethod
     def from_json_list(blockchain_dict: List[dict], wallet: Wallet):
