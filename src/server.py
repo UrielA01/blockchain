@@ -98,7 +98,8 @@ def send_chain_headers_only():
     data = []
     current_block = blockchain.last_block
     while current_block:
-        data.append(current_block.header    .to_dict)
+        data.append({**current_block.header.to_dict,
+                    "hash": current_block.header.hash})
         current_block = current_block.previous_block
     return jsonify(data)
 
