@@ -103,9 +103,9 @@ def send_chain_headers_only():
     return jsonify(data)
 
 
-@app.route("/block/<index>", methods=['GET'])
-def get_block_by_index(index: str):
-    block = blockchain.get_block_by_index(int(index))
+@app.route("/block/<hash>", methods=['GET'])
+def get_block_by_hash(hash: str):
+    block = blockchain.get_block_by_hash(hash)
     if not block:
         return "Block not found", 404
     return jsonify(block.to_dict)

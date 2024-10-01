@@ -106,10 +106,10 @@ class Blockchain:
         reset_transaction_memory()
         return new_block
 
-    def get_block_by_index(self, index: int):
+    def get_block_by_hash(self, hash: str):
         current_block = self.last_block
         while current_block:
-            if current_block.header.index == index:
+            if current_block.header.hash == hash:
                 return current_block
             current_block = current_block.previous_block
         return None
