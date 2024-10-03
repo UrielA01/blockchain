@@ -45,11 +45,12 @@ def index_route():
 
 
 @app.route("/transaction", methods=['POST'])
-def validate_transaction():
+def create_transaction():
     content = request.json
     try:
         if content.get('transaction'):
             transaction = Transaction.from_json(content.get('transaction'))
+            transaction.sign_inputs(owner=my_wallet)
             validate = TransactionValidation(
                 transaction=transaction, blockchain=blockchain)
             validate.validate()
